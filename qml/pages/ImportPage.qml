@@ -87,7 +87,7 @@ Page {
 
             Label {
                 width: parent.width
-                text: "Select a .txt or .json file containing otpauth:// URIs, one per line."
+                text: "Select a .txt file containing otpauth:// URIs, one per line."
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 wrapMode: Text.WordWrap
