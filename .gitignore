@@ -11,6 +11,11 @@ documentation.list
 # The binary is named after the directory it lives in.
 /harbour-sailotp
 
+# On-device diagnostic tools built by hand (see the header comment in
+# tests/probe_zxing.cpp for the build command).
+/tests/probe_zxing
+/tests/probe_camera
+
 # Packaged output and per-target copies.
 RPMS/
 
