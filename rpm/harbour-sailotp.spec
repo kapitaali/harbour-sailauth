@@ -1,5 +1,5 @@
 Name:       harbour-sailotp
-Summary:    TOTP authenticator for Sailfish OS
+Summary:    TOTP 2FA authenticator for Sailfish OS
 Version:    0.1.0
 Release:    1
 Group:      Qt/Qt
