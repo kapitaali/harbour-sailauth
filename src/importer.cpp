@@ -1,9 +1,63 @@
 #include "importer.h"
 #include "database.h"
+#include "totp.h"
 #include <QFile>
 #include <QTextStream>
 #include <QUrlQuery>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QJsonValue>
+#include <QVariantMap>
 #include <QDebug>
+
+namespace {
+
+// Backups spell the same fields differently: Aegis uses "algo" inside "info",
+// andOTP uses "algorithm", FreeOTP uses "algo" at the top level.
+int intValue(const QJsonObject &object, const char *key, int fallback)
+{
+    const QJsonValue value = object.value(QLatin1String(key));
+    if (value.isDouble()) return value.toInt();
+    if (value.isString()) {
+        bool ok = false;
+        const int parsed = value.toString().toInt(&ok);
+        if (ok) return parsed;
+    }
+    return fallback;
+}
+
+QString stringValue(const QJsonObject &object, const char *key)
+{
+    const QJsonValue value = object.value(QLatin1String(key));
+    return value.isString() ? value.toString().trimmed() : QString();
+}
+
+// Does this object describe an account, as opposed to a container that merely
+// nests some? Checked before validation so that an entry we reject (an HOTP, a
+// Steam code, a SHA-256 secret) is consumed rather than walked into — walking
+// into it would find the secret again and import it with default settings.
+bool isEntry(const QJsonObject &object)
+{
+    const QJsonValue info = object.value(QLatin1String("info"));
+    if (info.isObject() && !stringValue(info.toObject(), "secret").isEmpty())
+        return true;
+    return !stringValue(object, "secret").isEmpty();
+}
+
+// Same normalisation for every source so that the same key imported from a
+// text file and from a JSON backup compares equal and de-duplicates.
+QString normaliseSecret(const QString &secret)
+{
+    QString normalised = secret.toUpper();
+    normalised.remove('=');
+    normalised.remove(' ');
+    normalised.remove('-');
+    return normalised;
+}
+
+} // namespace
 
 Importer::Importer(Database *db, QObject *parent)
     : QObject(parent), m_db(db)
@@ -21,6 +75,19 @@ QVariantList Importer::parseFile(const QString &filePath)
     QTextStream stream(&file);
     QString content = stream.readAll();
     file.close();
+
+    // Exports come in two shapes: one otpauth:// URI per line, or a JSON
+    // document (Aegis, andOTP, GNOME Authenticator, FreeOTP). Decide on the
+    // first non-whitespace character, ignoring a UTF-8 BOM.
+    QString trimmed = content.trimmed();
+    if (trimmed.startsWith(QChar(0xFEFF))) trimmed = trimmed.mid(1).trimmed();
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        const QVariantList fromJson = parseJson(trimmed);
+        // Fall back to the line parser: a plain-text list may open with "["
+        // without being JSON, and a JSON file that yields nothing (for
+        // instance an encrypted Aegis backup) loses nothing by trying.
+        return fromJson.isEmpty() ? parseText(content) : fromJson;
+    }
 
     return parseText(content);
 }
@@ -44,24 +111,160 @@ QVariantList Importer::parseText(const QString &text)
         while (trimmed.endsWith(',') || trimmed.endsWith('"') || trimmed.endsWith('\''))
             trimmed.chop(1);
 
-        if (!trimmed.startsWith("otpauth://")) continue;
-
-        ImportAccount acct = parseOtpAuthUri(trimmed);
-        if (!acct.secret.isEmpty()) {
-            QVariantMap map;
-            map["issuer"] = acct.issuer;
-            map["name"] = acct.name;
-            map["secret"] = acct.secret;
-            map["digits"] = acct.digits;
-            map["period"] = acct.period;
-            accounts.append(map);
-        }
+        appendUri(accounts, trimmed);
     }
 
     return accounts;
 }
 
-ImportAccount Importer::parseOtpAuthUri(const QString &uri)
+void Importer::appendUri(QVariantList &accounts, const QString &uri) const
+{
+    const QString trimmed = uri.trimmed();
+    if (!trimmed.startsWith("otpauth://", Qt::CaseInsensitive)) return;
+
+    const ImportAccount acct = parseOtpAuthUri(trimmed);
+    if (acct.secret.isEmpty()) return;
+
+    const QVariantMap entry = makeAccount(acct.issuer, acct.name, acct.secret,
+                                          QStringLiteral("totp"), QString(),
+                                          acct.digits, acct.period);
+    if (!entry.isEmpty()) accounts.append(entry);
+}
+
+QVariantList Importer::parseJson(const QString &json)
+{
+    QJsonParseError error;
+    const QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8(), &error);
+    if (error.error != QJsonParseError::NoError) {
+        qDebug() << "Invalid JSON:" << error.errorString();
+        return QVariantList();
+    }
+
+    QVariantList accounts;
+    collect(doc.isArray() ? QJsonValue(doc.array()) : QJsonValue(doc.object()), accounts);
+    return accounts;
+}
+
+/*
+ * Walks a decoded JSON document. Every shape we support reduces to "find the
+ * objects that carry a secret":
+ *
+ *   andOTP / GNOME Authenticator   [ { "type": "TOTP", "secret": ... } ]
+ *   Aegis                          { "db": { "entries": [ { "info": { "secret":
+ *                                                              ... } } ] } }
+ *   FreeOTP                        [ { "url": "otpauth://totp/...", ... } ]
+ *   any other exporter             strings anywhere that are otpauth:// URIs
+ *
+ * The last rule is deliberately last-resort and applies to any string in the
+ * document, so an unfamiliar format still imports if it carries plain URIs.
+ */
+void Importer::collect(const QJsonValue &value, QVariantList &accounts) const
+{
+    if (value.isArray()) {
+        const QJsonArray array = value.toArray();
+        for (const QJsonValue &element : array)
+            collect(element, accounts);
+        return;
+    }
+
+    if (!value.isObject()) {
+        appendUri(accounts, value.toString());
+        return;
+    }
+
+    const QJsonObject object = value.toObject();
+
+    if (isEntry(object)) {
+        const QVariantMap entry = entryFromObject(object);
+        // The object is consumed either way: an entry rejected by
+        // makeAccount() must not be revisited by the walk below.
+        if (!entry.isEmpty()) accounts.append(entry);
+        return;
+    }
+
+    for (QJsonObject::const_iterator it = object.constBegin(); it != object.constEnd(); ++it) {
+        if (it.value().isString())
+            appendUri(accounts, it.value().toString());
+        else
+            collect(it.value(), accounts);
+    }
+}
+
+QVariantMap Importer::entryFromObject(const QJsonObject &object) const
+{
+    // Aegis: name/issuer at the top level, everything else under "info".
+    const QJsonValue infoValue = object.value(QLatin1String("info"));
+    if (infoValue.isObject()) {
+        const QJsonObject info = infoValue.toObject();
+        const QString secret = stringValue(info, "secret");
+        if (!secret.isEmpty()) {
+            return makeAccount(stringValue(object, "issuer"),
+                               stringValue(object, "name"),
+                               secret,
+                               stringValue(object, "type"),
+                               stringValue(info, "algo"),
+                               intValue(info, "digits", 6),
+                               intValue(info, "period", 30));
+        }
+    }
+
+    // andOTP and friends: one flat object per account.
+    const QString secret = stringValue(object, "secret");
+    if (!secret.isEmpty()) {
+        QString algorithm = stringValue(object, "algorithm");
+        if (algorithm.isEmpty()) algorithm = stringValue(object, "algo");
+
+        return makeAccount(stringValue(object, "issuer"),
+                           stringValue(object, "label"),
+                           secret,
+                           stringValue(object, "type"),
+                           algorithm,
+                           intValue(object, "digits", 6),
+                           intValue(object, "period", 30));
+    }
+
+    return QVariantMap();
+}
+
+QVariantMap Importer::makeAccount(const QString &issuer, const QString &name,
+                                  const QString &secret, const QString &type,
+                                  const QString &algorithm, int digits, int period) const
+{
+    // Only time-based codes on SHA-1. Importing an HOTP, a Steam code or a
+    // SHA-256 secret as if it were SHA-1 TOTP would produce plausible-looking
+    // codes that never match the service — worse than importing nothing.
+    if (!type.isEmpty() && type.compare(QLatin1String("totp"), Qt::CaseInsensitive) != 0)
+        return QVariantMap();
+    if (!algorithm.isEmpty() && algorithm.compare(QLatin1String("SHA1"), Qt::CaseInsensitive) != 0)
+        return QVariantMap();
+
+    Totp totp;
+    const QString normalisedSecret = normaliseSecret(secret);
+    if (!totp.validateSecret(normalisedSecret)) return QVariantMap();
+
+    // Match parseOtpAuthUri(): a bare label may be "Issuer:account".
+    QString cleanIssuer = issuer;
+    QString cleanName = name;
+    if (cleanIssuer.isEmpty()) {
+        const int colon = cleanName.indexOf(':');
+        if (colon >= 0) {
+            cleanIssuer = cleanName.left(colon).trimmed();
+            cleanName = cleanName.mid(colon + 1).trimmed();
+        }
+    }
+
+    QVariantMap entry;
+    entry["issuer"] = cleanIssuer;
+    entry["name"] = cleanName;
+    entry["secret"] = normalisedSecret;
+    // Totp::generateCode() only ever emits 6 or 8 digits; store what it will
+    // actually produce rather than an unsupported value.
+    entry["digits"] = (digits == 8) ? 8 : 6;
+    entry["period"] = (period > 0) ? period : 30;
+    return entry;
+}
+
+ImportAccount Importer::parseOtpAuthUri(const QString &uri) const
 {
     ImportAccount result;
     result.digits = 6;
@@ -102,9 +305,7 @@ ImportAccount Importer::parseOtpAuthUri(const QString &uri)
     QUrlQuery urlQuery(query);
 
     // Secrets are Base32; normalise so duplicates compare equal.
-    QString secret = urlQuery.queryItemValue("secret").toUpper();
-    secret.remove(' ');
-    secret.remove('-');
+    QString secret = normaliseSecret(urlQuery.queryItemValue("secret"));
     result.secret = secret;
 
     QString issuerParam = urlQuery.queryItemValue("issuer").trimmed();

@@ -87,7 +87,8 @@ Page {
 
             Label {
                 width: parent.width
-                text: "Select a .txt file containing otpauth:// URIs, one per line."
+                text: "Select a .txt file of otpauth:// URIs or a .json backup " +
+                      "from Aegis, andOTP or GNOME Authenticator."
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 wrapMode: Text.WordWrap

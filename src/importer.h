@@ -6,6 +6,8 @@
 #include <QUrl>
 
 class Database;
+class QJsonValue;
+class QJsonObject;
 
 struct ImportAccount {
     QString issuer;
@@ -26,7 +28,14 @@ public:
     Q_INVOKABLE int importAccounts(const QVariantList &accounts);
 
 private:
-    ImportAccount parseOtpAuthUri(const QString &uri);
+    ImportAccount parseOtpAuthUri(const QString &uri) const;
+    QVariantList parseJson(const QString &json);
+    void collect(const QJsonValue &value, QVariantList &accounts) const;
+    QVariantMap entryFromObject(const QJsonObject &object) const;
+    QVariantMap makeAccount(const QString &issuer, const QString &name,
+                            const QString &secret, const QString &type,
+                            const QString &algorithm, int digits, int period) const;
+    void appendUri(QVariantList &accounts, const QString &uri) const;
 
     Database *m_db;
 };
