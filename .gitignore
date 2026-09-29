@@ -1,0 +1,21 @@
+# Build artifacts — sfdk build compiles in place, in this directory.
+Makefile
+.qmake.stash
+*.o
+moc_*.cpp
+*.moc
+qmlcache/
+*.qmlc
+documentation.list
+
+# The binary is named after the directory it lives in.
+/harbour-sailotp
+
+# Packaged output and per-target copies.
+RPMS/
+
+# sfdk working state (its own .sfdk/.gitignore already ignores contents).
+.sfdk/
+
+# Project-internal notes, kept out of the repository.
+META-INF/
