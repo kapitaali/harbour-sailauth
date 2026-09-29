@@ -16,16 +16,50 @@
 #include <QQmlError>
 #include <QQuickView>
 #include <QScopedPointer>
+#include <QTime>
 #include <QDebug>
+
+#include <cstdio>
 
 #include "totp.h"
 #include "database.h"
 #include "accountmodel.h"
 #include "clipboardhelper.h"
 #include "importer.h"
+#include "qrfilter.h"
+
+/*
+ * Sailfish's Qt build routes qWarning/qDebug to the system journal, which an
+ * unprivileged process cannot read back — and QML runtime errors (bad
+ * handler names, type mismatches...) land there too. Mirror everything to
+ * stderr with a timestamp instead: the debug launch recipe captures stderr,
+ * so failures stay diagnosable.
+ */
+static void mirrorMessages(QtMsgType type, const QMessageLogContext &context,
+                           const QString &message)
+{
+    const char *kind = type == QtFatalMsg    ? "FATAL"
+            : type == QtCriticalMsg         ? "CRIT"
+            : type == QtWarningMsg          ? "WARN"
+            : type == QtInfoMsg             ? "INFO"
+                                            : "DBG";
+    std::fprintf(stderr, "[%s %s] %s:%d %s\n",
+                 qPrintable(QTime::currentTime().toString(QLatin1String("hh:mm:ss.zzz"))),
+                 kind, context.file ? context.file : "-",
+                 context.line, qPrintable(message));
+    std::fflush(stderr);
+}
 
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(mirrorMessages);
+
+    // Startup marker: attributes everything that follows in a captured log
+    // to this launch (and proves stderr capture is working at all).
+    std::fprintf(stderr, "[%s INFO] sailotp starting\n",
+                 qPrintable(QTime::currentTime().toString(QLatin1String("hh:mm:ss.zzz"))));
+    std::fflush(stderr);
+
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
 
@@ -39,12 +73,14 @@ int main(int argc, char *argv[])
     Importer importer(&db);
 
     Totp totp;
+    QrFilter qrFilter;
     QQmlContext *context = view->rootContext();
     context->setContextProperty("totp", &totp);
     context->setContextProperty("accountModel", &model);
     context->setContextProperty("database", &db);
     context->setContextProperty("clipboardHelper", &clipboard);
     context->setContextProperty("importer", &importer);
+    context->setContextProperty("qrFilter", &qrFilter);
 
     view->setSource(SailfishApp::pathTo("qml/harbour-sailotp.qml"));
 

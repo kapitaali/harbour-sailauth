@@ -3,7 +3,7 @@
 TARGET = harbour-sailotp
 CONFIG += sailfishapp c++11
 
-QT += core gui qml quick sql multimedia
+QT += core gui qml quick sql multimedia dbus
 
 SOURCES += \
     src/harbour-sailotp.cpp \
@@ -11,14 +11,16 @@ SOURCES += \
     src/accountmodel.cpp \
     src/database.cpp \
     src/clipboardhelper.cpp \
-    src/importer.cpp
+    src/importer.cpp \
+    src/qrfilter.cpp
 
 HEADERS += \
     src/totp.h \
     src/accountmodel.h \
     src/database.h \
     src/clipboardhelper.h \
-    src/importer.h
+    src/importer.h \
+    src/qrfilter.h
 
 # sailfishapp.prf installs the whole qml/ tree; this list exists so the IDE
 # and qmake know about the files (and so OTHER_FILES below is complete).

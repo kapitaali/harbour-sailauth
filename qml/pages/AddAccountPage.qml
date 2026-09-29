@@ -12,10 +12,6 @@ import "../components"
 Page {
     id: addPage
 
-    property string scannedSecret: ""
-    property string scannedIssuer: ""
-    property string scannedName: ""
-
     allowedOrientations: Orientation.Portrait
 
     SilicaFlickable {
@@ -36,7 +32,19 @@ Page {
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Scan QR code instead"
-                onClicked: pageStack.push(Qt.resolvedUrl("ScanPage.qml"))
+                onClicked: {
+                    // Silica would only show its generic error page if the
+                    // scanner failed to compile, so surface the real reason.
+                    var scanner = Qt.createComponent("ScanPage.qml")
+                    if (scanner.status === Component.Error) {
+                        var why = scanner.errorString()
+                        console.error("ScanPage failed to load:", why)
+                        toast.show("Scan failed: "
+                                   + (why.length > 90 ? why.slice(0, 90) + "…" : why))
+                    } else {
+                        pageStack.push(scanner)
+                    }
+                }
             }
 
             TextField {
@@ -44,7 +52,6 @@ Page {
                 label: "Issuer"
                 placeholderText: "e.g. GitHub"
                 width: parent.width
-                text: addPage.scannedIssuer
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: nameField.focus = true
             }
@@ -54,7 +61,6 @@ Page {
                 label: "Account name"
                 placeholderText: "e.g. user@example.com"
                 width: parent.width
-                text: addPage.scannedName
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: secretField.focus = true
             }
@@ -64,7 +70,6 @@ Page {
                 label: "Secret key"
                 placeholderText: "Base32 encoded secret"
                 width: parent.width
-                text: addPage.scannedSecret
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: digitsField.focus = true
             }
@@ -117,6 +122,38 @@ Page {
                 }
             }
         }
+    }
+
+    /*
+     * A code ScanPage decoded belongs to this form: fill it in. Nothing pops
+     * here — the scanner closes itself after showing "QR code scanned", and
+     * a toast fired below surfaces once it is gone.
+     */
+    function applyScannedCode(text) {
+        if (text.indexOf("otpauth://") !== 0)
+            return
+
+        var top = pageStack.currentPage
+        if (!top || top.scannerPage !== true)
+            return
+
+        var parsed = importer.parseText(text)
+        if (parsed.length === 0) {
+            toast.show("Could not read that QR code")
+            return
+        }
+
+        var account = parsed[0]
+        issuerField.text = account.issuer
+        nameField.text = account.name
+        secretField.text = account.secret
+        digitsField.text = account.digits
+        periodField.text = account.period
+    }
+
+    Connections {
+        target: qrFilter
+        onDecoded: addPage.applyScannedCode(text)
     }
 
     Toast { id: toast }
