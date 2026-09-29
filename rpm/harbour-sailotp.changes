@@ -1,0 +1,4 @@
+-------------------------------------------------------------------
+Tue Sep 29 2026 kapitaali <teppo@kapitaali.com> 0.1.0-1
+- Initial release: RFC 6238 TOTP codes with countdown, SQLite storage,
+  add/edit/delete, otpauth:// import, clipboard copy and app cover.
