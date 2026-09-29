@@ -13,6 +13,7 @@
 #include <sailfishapp.h>
 #include <QGuiApplication>
 #include <QQmlContext>
+#include <QQmlError>
 #include <QQuickView>
 #include <QScopedPointer>
 #include <QDebug>
@@ -46,6 +47,17 @@ int main(int argc, char *argv[])
     context->setContextProperty("importer", &importer);
 
     view->setSource(SailfishApp::pathTo("qml/harbour-sailotp.qml"));
+
+    // QQuickView shows an empty (white) window if the root component fails to
+    // load and, unlike QQmlApplicationEngine, does not report the errors
+    // itself — so print them here or the failure is invisible in the logs.
+    if (view->status() == QQuickView::Error) {
+        const QList<QQmlError> errors = view->errors();
+        for (int i = 0; i < errors.count(); ++i)
+            qWarning() << errors.at(i).toString();
+        qWarning() << "Failed to load" << view->source();
+    }
+
     view->showFullScreen();
 
     return app->exec();
