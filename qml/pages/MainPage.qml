@@ -131,6 +131,10 @@ Page {
                 text: "Settings"
                 onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
             }
+            MenuItem {
+                text: "About"
+                onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+            }
         }
 
         PushUpMenu {

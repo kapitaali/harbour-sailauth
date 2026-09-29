@@ -68,6 +68,16 @@ Page {
                 font.pixelSize: Theme.fontSizeExtraSmall
                 wrapMode: Text.WordWrap
             }
+
+            SectionHeader {
+                text: "About"
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "About SailOTP"
+                onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+            }
         }
     }
 

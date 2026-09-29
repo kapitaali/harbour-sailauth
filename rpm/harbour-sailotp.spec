@@ -34,6 +34,10 @@ a cover that shows the current code. No cloud, no tracking.
 %setup -q -n %{name}-%{version}
 
 %build
+# Hand the git-derived version to the app so the About page shows the real
+# thing instead of a copy that rots (APP_VERSION survives qmake untouched
+# via the environment, see harbour-sailotp.pro).
+export APP_VERSION=%{version}
 %qmake5 harbour-sailotp.pro
 %make_build
 

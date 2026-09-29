@@ -81,6 +81,9 @@ int main(int argc, char *argv[])
     context->setContextProperty("clipboardHelper", &clipboard);
     context->setContextProperty("importer", &importer);
     context->setContextProperty("qrFilter", &qrFilter);
+    // Build version for the About page (APP_VERSION comes from the .pro,
+    // which gets it from the RPM build environment).
+    context->setContextProperty("appVersion", QStringLiteral(APP_VERSION));
 
     view->setSource(SailfishApp::pathTo("qml/harbour-sailotp.qml"));
 

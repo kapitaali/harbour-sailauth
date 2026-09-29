@@ -4,7 +4,8 @@ import Sailfish.Silica 1.0
 Page {
     id: aboutPage
 
-    property string supportLink: "https://example.com/tip"
+    property string sourceLink: "https://github.com/kapitaali/harbour-sailotp"
+    property string tipLink: "https://ko-fi.com/kapitaali"
 
     allowedOrientations: Orientation.Portrait
 
@@ -43,7 +44,9 @@ Page {
 
             Label {
                 width: parent.width
-                text: "Version 0.1.0"
+                // The real build version, handed over by the RPM build from
+                // the git tag; hand-built binaries report "dev".
+                text: "Version " + appVersion
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
@@ -51,12 +54,12 @@ Page {
 
             Label {
                 width: parent.width
-                text: "A native TOTP authenticator for Sailfish OS.\n\n" +
+                text: "A native TOTP 2FA authenticator for Sailfish OS.\n\n" +
                       "• RFC 6238 compliant TOTP codes\n" +
-                      "• Local storage (no cloud, no tracking)\n" +
+                      "• Scan QR codes to add accounts\n" +
                       "• Import accounts from other authenticators\n" +
-                      "• Clean Sailfish Silica UI\n\n" +
-                      "All data stays on your device."
+                      "• Local storage — no cloud, no tracking\n\n" +
+                      "All codes and accounts stay on your device."
                 color: Theme.primaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
@@ -67,15 +70,36 @@ Page {
                 text: "Support"
             }
 
+            Label {
+                width: parent.width
+                text: "We love Open Source software and the Jolla ecosystem. " +
+                      "If you want to support me or my work, please leave " +
+                      "some tip here:"
+                color: Theme.primaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+            }
+
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Tip the developer"
-                onClicked: Qt.openUrlExternally(aboutPage.supportLink)
+                text: "Leave a tip"
+                onClicked: Qt.openUrlExternally(aboutPage.tipLink)
+            }
+
+            SectionHeader {
+                text: "Source code"
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "View on GitHub"
+                onClicked: Qt.openUrlExternally(aboutPage.sourceLink)
             }
 
             Label {
                 width: parent.width
-                text: "If you find this app useful, consider sending a small tip to support development."
+                text: "SailOTP is free and open source software."
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 horizontalAlignment: Text.AlignHCenter
