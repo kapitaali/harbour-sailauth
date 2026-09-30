@@ -23,6 +23,7 @@ SOURCES += \
     src/harbour-sailotp.cpp \
     src/totp.cpp \
     src/accountmodel.cpp \
+    src/accountfilter.cpp \
     src/database.cpp \
     src/clipboardhelper.cpp \
     src/importer.cpp \
@@ -31,6 +32,7 @@ SOURCES += \
 HEADERS += \
     src/totp.h \
     src/accountmodel.h \
+    src/accountfilter.h \
     src/database.h \
     src/clipboardhelper.h \
     src/importer.h \

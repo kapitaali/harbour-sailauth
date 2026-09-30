@@ -27,6 +27,7 @@
 #include "totp.h"
 #include "database.h"
 #include "accountmodel.h"
+#include "accountfilter.h"
 #include "clipboardhelper.h"
 #include "importer.h"
 #include "qrfilter.h"
@@ -112,9 +113,13 @@ int main(int argc, char *argv[])
 
     Totp totp;
     QrFilter qrFilter;
+    AccountFilter accountFilter;
+    accountFilter.setSourceModel(&model);
+
     QQmlContext *context = view->rootContext();
     context->setContextProperty("totp", &totp);
     context->setContextProperty("accountModel", &model);
+    context->setContextProperty("filteredAccountModel", &accountFilter);
     context->setContextProperty("database", &db);
     context->setContextProperty("clipboardHelper", &clipboard);
     context->setContextProperty("importer", &importer);
