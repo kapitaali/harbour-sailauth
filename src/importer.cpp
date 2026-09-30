@@ -291,14 +291,17 @@ ImportAccount Importer::parseOtpAuthUri(const QString &uri) const
     QString path = queryIdx >= 0 ? pathAndQuery.left(queryIdx) : pathAndQuery;
     QString query = queryIdx >= 0 ? pathAndQuery.mid(queryIdx + 1) : "";
 
-    // Parse label (path) — can be "Issuer:AccountName" or just "AccountName"
-    QString label = QUrl::fromPercentEncoding(path.toUtf8());
-    int colonIdx = label.indexOf(':');
+    // Parse label (path) — "Issuer:AccountName" or just "AccountName". The
+    // separator is an unencoded ':', while a colon that belongs to the issuer
+    // or the account name arrives as %3A (RFC 6238's key URI format), so the
+    // raw path is split first: decoding before splitting would read an
+    // encoded colon as the separator and mangle both halves.
+    const int colonIdx = path.indexOf(':');
     if (colonIdx >= 0) {
-        result.issuer = label.left(colonIdx).trimmed();
-        result.name = label.mid(colonIdx + 1).trimmed();
+        result.issuer = QUrl::fromPercentEncoding(path.left(colonIdx).toUtf8()).trimmed();
+        result.name = QUrl::fromPercentEncoding(path.mid(colonIdx + 1).toUtf8()).trimmed();
     } else {
-        result.name = label.trimmed();
+        result.name = QUrl::fromPercentEncoding(path.toUtf8()).trimmed();
     }
 
     // Parse query parameters

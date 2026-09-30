@@ -106,6 +106,19 @@ int main()
     expectStr("text: name", field(text, 0, "name"), "alice@example.com");
     expectStr("text: secret uppercased", field(text, 1, "secret"), "MFRGGZDFMZTWQ2LK");
 
+    // --- an encoded colon (%3A) inside the issuer half is not the separator,
+    //     and a bare account name with the issuer in the query (the shape
+    //     GNOME Authenticator writes and reads) parses as-is ---
+    const QVariantList encoded = parse(importer, "encoded.txt",
+        "otpauth://totp/ACME%3AX:carol?secret=JBSWY3DPEHPK3PXP\n"
+        "otpauth://totp/alice%40example.com?secret=JBSWY3DPEHPK3PXP"
+        "&issuer=GitHub&algorithm=SHA1&digits=6&period=30\n");
+    expectInt("encoded colon: count", encoded.count(), 2);
+    expectStr("encoded colon: issuer", field(encoded, 0, "issuer"), "ACME:X");
+    expectStr("encoded colon: name", field(encoded, 0, "name"), "carol");
+    expectStr("bare path: name", field(encoded, 1, "name"), "alice@example.com");
+    expectStr("bare path: issuer from query", field(encoded, 1, "issuer"), "GitHub");
+
     // --- bracketed text that only looks like JSON ---
     const QVariantList bracketed = parse(importer, "bracketed.txt",
         "[\n"
