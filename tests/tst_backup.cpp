@@ -222,7 +222,7 @@ int main()
                   "otpauth://totp/alice?secret=JBSWY3DPEHPK3PXP"
                   "&issuer=GitHub&algorithm=SHA1&digits=6&period=30");
         expectStr("text line 2", lines.value(1),
-                  "otpauth://totp/bob%40example.org?secret=MFRGGZDFMZTWQ2LK"
+                  "otpauth://totp/bob%40example%2Eorg?secret=MFRGGZDFMZTWQ2LK"
                   "&issuer=Example&algorithm=SHA1&digits=8&period=60");
         expectBool("text export ends with newline", lines.value(2).isEmpty(), true);
         // The file holds secrets too, so it gets the same owner-only mode.
@@ -237,6 +237,7 @@ int main()
     QVariantList awkward;
     awkward.append(account("ACME Co", "user:sub", "jbswy3dpehpk3pxp==", 7, 30));
     awkward.append(account("", "", "JBSWY3DPEHPK3PXP", 6, 30));
+    awkward.append(account("Git Hub", "v1.2_beta-x~y", "JBSWY3DPEHPK3PXP", 6, 30));
     const QString awkwardPath = dir.path() + "/awkward.txt";
     expectStr("awkward export succeeds",
               Backup::writeTextExport(awkwardPath, awkward), QString());
@@ -255,6 +256,13 @@ int main()
         expectStr("empty issuer omitted", lines.value(1),
                   "otpauth://totp/account?secret=JBSWY3DPEHPK3PXP"
                   "&algorithm=SHA1&digits=6&period=30");
+        // The RFC 3986 unreserved characters are encoded too — the exact
+        // NON_ALPHANUMERIC rule GNOME Authenticator writes with, so our
+        // lines match its exports byte for byte.
+        expectStr("unreserved characters encoded", lines.value(2),
+                  "otpauth://totp/v1%2E2%5Fbeta%2Dx%7Ey"
+                  "?secret=JBSWY3DPEHPK3PXP"
+                  "&issuer=Git%20Hub&algorithm=SHA1&digits=6&period=30");
     }
 
     expectStr("empty text export refused",

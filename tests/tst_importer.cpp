@@ -112,12 +112,18 @@ int main()
     const QVariantList encoded = parse(importer, "encoded.txt",
         "otpauth://totp/ACME%3AX:carol?secret=JBSWY3DPEHPK3PXP\n"
         "otpauth://totp/alice%40example.com?secret=JBSWY3DPEHPK3PXP"
-        "&issuer=GitHub&algorithm=SHA1&digits=6&period=30\n");
-    expectInt("encoded colon: count", encoded.count(), 2);
+        "&issuer=GitHub&algorithm=SHA1&digits=6&period=30\n"
+        "otpauth://totp/v1%2E2%5Fbeta%2Dx%7Ey?secret=JBSWY3DPEHPK3PXP"
+        "&issuer=Git%20Hub&algorithm=SHA1&digits=6&period=30\n");
+    expectInt("encoded colon: count", encoded.count(), 3);
     expectStr("encoded colon: issuer", field(encoded, 0, "issuer"), "ACME:X");
     expectStr("encoded colon: name", field(encoded, 0, "name"), "carol");
     expectStr("bare path: name", field(encoded, 1, "name"), "alice@example.com");
     expectStr("bare path: issuer from query", field(encoded, 1, "issuer"), "GitHub");
+    // NON_ALPHANUMERIC-encoded label and issuer, as GNOME Authenticator
+    // exports them, decode back to the original characters.
+    expectStr("fully encoded: name", field(encoded, 2, "name"), "v1.2_beta-x~y");
+    expectStr("fully encoded: issuer", field(encoded, 2, "issuer"), "Git Hub");
 
     // --- bracketed text that only looks like JSON ---
     const QVariantList bracketed = parse(importer, "bracketed.txt",

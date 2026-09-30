@@ -12,7 +12,6 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QStandardPaths>
-#include <QUrl>
 
 namespace {
 const char *kFormat = "harbour-sailotp-backup";
@@ -35,12 +34,42 @@ QString documentPath(const QString &prefix, const QString &suffix)
 }
 
 /*
- * One account as a single otpauth:// URI — the same shape GNOME
- * Authenticator's own writer produces (account name percent-encoded in
- * the path, issuer as a query parameter), which its line-based restore
- * parses leniently and every other authenticator understands. The
- * parameter order matches theirs as well, so the files diff cleanly
- * against one another.
+ * Percent-encode every byte outside A–Z a–z 0–9, uppercase hex — the
+ * exact set GNOME Authenticator applies to label and issuer when it
+ * writes this format (percent-encoding's NON_ALPHANUMERIC). QUrl's
+ * default would leave the RFC 3986 unreserved "-._~" raw; both decode
+ * identically, but encoding everything makes our lines byte-for-byte
+ * like GNOME's own exports, and a fully encoded component contains
+ * nothing any parser could split on.
+ */
+QByteArray encodeComponent(const QString &text)
+{
+    static const char kHex[] = "0123456789ABCDEF";
+    const QByteArray utf8 = text.toUtf8();
+    QByteArray encoded;
+    encoded.reserve(utf8.size() * 3);
+    const char *bytes = utf8.constData();
+    for (int i = 0; i < utf8.size(); ++i) {
+        const unsigned char byte = static_cast<unsigned char>(bytes[i]);
+        if ((byte >= 'A' && byte <= 'Z') || (byte >= 'a' && byte <= 'z')
+                || (byte >= '0' && byte <= '9')) {
+            encoded += char(byte);
+        } else {
+            encoded += '%';
+            encoded += kHex[byte >> 4];
+            encoded += kHex[byte & 0x0F];
+        }
+    }
+    return encoded;
+}
+
+/*
+ * One account as a single otpauth:// URI — the same shape and the same
+ * encoding GNOME Authenticator's own writer produces (account name and
+ * issuer percent-encoded with NON_ALPHANUMERIC, secret raw, parameter
+ * order secret, issuer, algorithm, digits, period), which its
+ * line-based restore parses leniently and every other authenticator
+ * understands. The files diff cleanly against one another.
  */
 QString otpauthLine(const QVariantMap &entry)
 {
@@ -67,11 +96,11 @@ QString otpauthLine(const QVariantMap &entry)
         period = 30;
 
     QString uri = QStringLiteral("otpauth://totp/")
-            + QString::fromLatin1(QUrl::toPercentEncoding(name))
+            + QString::fromLatin1(encodeComponent(name))
             + QStringLiteral("?secret=") + secret;
     if (!issuer.isEmpty())
         uri += QStringLiteral("&issuer=")
-                + QString::fromLatin1(QUrl::toPercentEncoding(issuer));
+                + QString::fromLatin1(encodeComponent(issuer));
     uri += QStringLiteral("&algorithm=SHA1")
             + QStringLiteral("&digits=") + QString::number(digits)
             + QStringLiteral("&period=") + QString::number(period);
