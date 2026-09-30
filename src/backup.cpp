@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QStandardPaths>
+#include <QUrl>
 
 namespace {
 const char *kFormat = "harbour-sailotp-backup";
@@ -21,6 +22,61 @@ const int kKeyBytes = 32;       // AES-256
 const int kSaltBytes = 16;
 const int kIvBytes = 12;        // GCM's standard 96-bit nonce
 const int kTagBytes = 16;
+
+// ~/Documents/<prefix><timestamp><suffix>, the folder the Files app shows.
+QString documentPath(const QString &prefix, const QString &suffix)
+{
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    if (dir.isEmpty())
+        dir = QDir::homePath() + QStringLiteral("/Documents");
+    const QString stamp =
+            QDateTime::currentDateTime().toString(QStringLiteral("yyyyMMdd-hhmmss"));
+    return dir + QLatin1Char('/') + prefix + stamp + suffix;
+}
+
+/*
+ * One account as a single otpauth:// URI — the same shape GNOME
+ * Authenticator's own writer produces (account name percent-encoded in
+ * the path, issuer as a query parameter), which its line-based restore
+ * parses leniently and every other authenticator understands. The
+ * parameter order matches theirs as well, so the files diff cleanly
+ * against one another.
+ */
+QString otpauthLine(const QVariantMap &entry)
+{
+    // Normalise the way importers expect: base32 upper-case without
+    // padding, spaces or dashes — the same pass Importer applies on read,
+    // so a padded or lower-cased secret round-trips identically.
+    QString secret = entry.value(QStringLiteral("secret")).toString().toUpper();
+    secret.remove(QLatin1Char('='));
+    secret.remove(QLatin1Char(' '));
+    secret.remove(QLatin1Char('-'));
+
+    QString issuer = entry.value(QStringLiteral("issuer")).toString().trimmed();
+    QString name = entry.value(QStringLiteral("name")).toString().trimmed();
+    if (name.isEmpty())
+        name = issuer;
+    if (name.isEmpty())
+        name = QStringLiteral("account");
+
+    int digits = entry.value(QStringLiteral("digits")).toInt();
+    if (digits < 4 || digits > 10)
+        digits = 6;
+    int period = entry.value(QStringLiteral("period")).toInt();
+    if (period < 5 || period > 300)
+        period = 30;
+
+    QString uri = QStringLiteral("otpauth://totp/")
+            + QString::fromLatin1(QUrl::toPercentEncoding(name))
+            + QStringLiteral("?secret=") + secret;
+    if (!issuer.isEmpty())
+        uri += QStringLiteral("&issuer=")
+                + QString::fromLatin1(QUrl::toPercentEncoding(issuer));
+    uri += QStringLiteral("&algorithm=SHA1")
+            + QStringLiteral("&digits=") + QString::number(digits)
+            + QStringLiteral("&period=") + QString::number(period);
+    return uri;
+}
 } // namespace
 
 Backup::Backup(QObject *parent)
@@ -73,19 +129,19 @@ QByteArray Backup::headerAad(int iterations, const QByteArray &salt,
 
 QString Backup::defaultBackupPath() const
 {
-    QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    if (dir.isEmpty())
-        dir = QDir::homePath() + QStringLiteral("/Documents");
-    const QString stamp = QDateTime::currentDateTime().toString(QStringLiteral("yyyyMMdd-hhmmss"));
-    return dir + QStringLiteral("/SailOTP-backup-") + stamp + QStringLiteral(".enc");
+    return documentPath(QStringLiteral("SailOTP-backup-"), QStringLiteral(".enc"));
 }
 
-QString Backup::saveBackup(const QString &filePath, const QString &passphrase)
+QString Backup::defaultTextExportPath() const
 {
-    if (!m_model)
-        return QStringLiteral("No accounts loaded");
+    return documentPath(QStringLiteral("SailOTP-export-"), QStringLiteral(".txt"));
+}
 
+QVariantList Backup::modelAccounts() const
+{
     QVariantList accounts;
+    if (!m_model)
+        return accounts;
     for (int row = 0; row < m_model->rowCount(); ++row) {
         const QModelIndex idx = m_model->index(row, 0);
         QVariantMap entry;
@@ -101,7 +157,21 @@ QString Backup::saveBackup(const QString &filePath, const QString &passphrase)
                      m_model->data(idx, AccountModel::PeriodRole).toInt());
         accounts.append(entry);
     }
-    return writeBackup(filePath, passphrase, accounts);
+    return accounts;
+}
+
+QString Backup::saveBackup(const QString &filePath, const QString &passphrase)
+{
+    if (!m_model)
+        return QStringLiteral("No accounts loaded");
+    return writeBackup(filePath, passphrase, modelAccounts());
+}
+
+QString Backup::saveTextExport(const QString &filePath)
+{
+    if (!m_model)
+        return QStringLiteral("No accounts loaded");
+    return writeTextExport(filePath, modelAccounts());
 }
 
 QVariantMap Backup::openBackup(const QString &filePath, const QString &passphrase)
@@ -200,14 +270,38 @@ QString Backup::writeBackup(const QString &filePath, const QString &passphrase,
     envelope.insert(QStringLiteral("cipher"), cipherObject);
     envelope.insert(QStringLiteral("payload"), QString::fromLatin1(ciphertext.toBase64()));
 
+    return writeDocument(filePath,
+                         QJsonDocument(envelope).toJson(QJsonDocument::Indented));
+}
+
+QString Backup::writeTextExport(const QString &filePath,
+                                const QVariantList &accounts)
+{
+    QByteArray document;
+    int exported = 0;
+    for (const QVariant &var : accounts) {
+        const QVariantMap entry = var.toMap();
+        if (entry.value(QStringLiteral("secret")).toString().isEmpty())
+            continue;
+        document += otpauthLine(entry).toUtf8();
+        document += '\n';
+        ++exported;
+    }
+    if (exported == 0)
+        return QStringLiteral("There are no accounts to export");
+
+    return writeDocument(filePath, document);
+}
+
+QString Backup::writeDocument(const QString &filePath, const QByteArray &content)
+{
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return QStringLiteral("Cannot write ") + filePath + QStringLiteral(": ")
                 + file.errorString();
-    const QByteArray document = QJsonDocument(envelope).toJson(QJsonDocument::Indented);
-    const qint64 written = file.write(document);
+    const qint64 written = file.write(content);
     file.close();
-    if (written != document.size())
+    if (written != content.size())
         return QStringLiteral("Short write to ") + filePath + QStringLiteral(": ")
                 + file.errorString();
     // The file holds secrets: owner-only.

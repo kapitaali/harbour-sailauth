@@ -23,6 +23,9 @@ and no tracking.
 - **Encrypted backup**: export every account to an AES-256-GCM file in
   Documents, protected by a passphrase you choose, and restore it later —
   on this phone or another one
+- **Export to other apps**: the same accounts as a plain-text file of
+  `otpauth://` URIs, which GNOME Authenticator, FreeOTP+ and Aegis import
+  directly
 - **About page** with the installed version, source-code link and a tip
   button
 
@@ -71,8 +74,9 @@ asks for confirmation.
 (which has the version, the GitHub link and the Ko-fi tip button).
 Settings also has **Export backup** and **Import backup**: the export
 writes an encrypted copy of every account to Documents under a passphrase
-you choose, and the import reads one back — it shows what the file
-contains before anything is restored.
+you choose — or, as a plain-text file, one `otpauth://` URI per line for
+GNOME Authenticator and other apps; the import reads an encrypted backup
+back — it shows what the file contains before anything is restored.
 
 ## Building from source
 
