@@ -34,17 +34,6 @@ Page {
             }
 
             SectionHeader {
-                text: "Security"
-            }
-
-            TextSwitch {
-                id: lockSwitch
-                text: "Require device lock"
-                description: "Require the device PIN or pattern to open SailOTP"
-                checked: false
-            }
-
-            SectionHeader {
                 text: "Data"
             }
 
