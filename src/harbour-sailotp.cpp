@@ -31,6 +31,7 @@
 #include "clipboardhelper.h"
 #include "importer.h"
 #include "qrfilter.h"
+#include "settings.h"
 
 /*
  * Sailfish's Qt build routes qWarning/qDebug to the system journal, which an
@@ -113,6 +114,7 @@ int main(int argc, char *argv[])
 
     Totp totp;
     QrFilter qrFilter;
+    Settings settings;
     AccountFilter accountFilter;
     accountFilter.setSourceModel(&model);
 
@@ -124,6 +126,7 @@ int main(int argc, char *argv[])
     context->setContextProperty("clipboardHelper", &clipboard);
     context->setContextProperty("importer", &importer);
     context->setContextProperty("qrFilter", &qrFilter);
+    context->setContextProperty("settings", &settings);
     // Build version for the About page (APP_VERSION comes from the .pro,
     // which gets it from the RPM build environment).
     context->setContextProperty("appVersion", QStringLiteral(APP_VERSION));

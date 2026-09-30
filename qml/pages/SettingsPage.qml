@@ -30,7 +30,8 @@ Page {
                 id: soundSwitch
                 text: "Sound feedback"
                 description: "Play a sound when a code is copied"
-                checked: true
+                checked: settings.soundEnabled
+                onCheckedChanged: settings.soundEnabled = checked
             }
 
             SectionHeader {

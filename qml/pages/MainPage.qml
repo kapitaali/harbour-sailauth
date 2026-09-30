@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import QtMultimedia 5.0
 import "../components"
 
 /*
@@ -141,6 +142,10 @@ Page {
             onClicked: {
                 clipboardHelper.setText(model.code)
                 toast.show("Code copied")
+                if (settings.soundEnabled) {
+                    copyPlayer.seek(0)
+                    copyPlayer.play()
+                }
             }
 
             menu: ContextMenu {
@@ -219,6 +224,15 @@ Page {
         repeat: true
         triggeredOnStart: true
         onTriggered: accountModel.tick()
+    }
+
+    // Copy feedback: the system's own keypress click (2.8 KB, has shipped in
+    // /usr/share/sounds/jolla-ambient for ages). Played only when the
+    // Settings toggle is on. The Audio permission (added to the .desktop for
+    // this) is what opens the PulseAudio socket inside the sandbox.
+    MediaPlayer {
+        id: copyPlayer
+        source: "file:///usr/share/sounds/jolla-ambient/stereo/keyboard_letter.wav"
     }
 
     Toast { id: toast }
