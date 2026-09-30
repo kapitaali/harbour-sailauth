@@ -41,13 +41,21 @@ Page {
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Export backup"
-                onClicked: toast.show("Encrypted backup is not implemented yet")
+                onClicked: {
+                    var page = pageStack.push(
+                                Qt.resolvedUrl("BackupExportPage.qml"))
+                    page.done.connect(function(message) { toast.show(message) })
+                }
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Import backup"
-                onClicked: toast.show("Encrypted backup is not implemented yet")
+                onClicked: {
+                    var page = pageStack.push(
+                                Qt.resolvedUrl("BackupImportPage.qml"))
+                    page.done.connect(function(message) { toast.show(message) })
+                }
             }
 
             Label {

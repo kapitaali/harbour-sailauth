@@ -19,6 +19,10 @@ _version_touch = $$system(touch $$PWD/src/harbour-sailotp.cpp)
 
 QT += core gui qml quick sql multimedia dbus
 
+# Encrypted backup: AES-256-GCM and PBKDF2 come from OpenSSL's libcrypto,
+# which is on the Harbour allowed-library list.
+LIBS += -lcrypto
+
 SOURCES += \
     src/harbour-sailotp.cpp \
     src/totp.cpp \
@@ -28,7 +32,8 @@ SOURCES += \
     src/clipboardhelper.cpp \
     src/importer.cpp \
     src/qrfilter.cpp \
-    src/settings.cpp
+    src/settings.cpp \
+    src/backup.cpp
 
 HEADERS += \
     src/totp.h \
@@ -38,7 +43,8 @@ HEADERS += \
     src/clipboardhelper.h \
     src/importer.h \
     src/qrfilter.h \
-    src/settings.h
+    src/settings.h \
+    src/backup.h
 
 # sailfishapp.prf installs the whole qml/ tree; this list exists so the IDE
 # and qmake know about the files (and so OTHER_FILES below is complete).
@@ -53,6 +59,8 @@ QML_FILES = \
     qml/pages/ImportPage.qml \
     qml/pages/ScanPage.qml \
     qml/pages/SettingsPage.qml \
+    qml/pages/BackupExportPage.qml \
+    qml/pages/BackupImportPage.qml \
     qml/pages/AboutPage.qml
 
 OTHER_FILES += \

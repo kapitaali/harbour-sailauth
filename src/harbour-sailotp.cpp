@@ -32,6 +32,7 @@
 #include "importer.h"
 #include "qrfilter.h"
 #include "settings.h"
+#include "backup.h"
 
 /*
  * Sailfish's Qt build routes qWarning/qDebug to the system journal, which an
@@ -118,6 +119,9 @@ int main(int argc, char *argv[])
     AccountFilter accountFilter;
     accountFilter.setSourceModel(&model);
 
+    Backup backup;
+    backup.setAccountModel(&model);
+
     QQmlContext *context = view->rootContext();
     context->setContextProperty("totp", &totp);
     context->setContextProperty("accountModel", &model);
@@ -127,6 +131,7 @@ int main(int argc, char *argv[])
     context->setContextProperty("importer", &importer);
     context->setContextProperty("qrFilter", &qrFilter);
     context->setContextProperty("settings", &settings);
+    context->setContextProperty("backup", &backup);
     // Build version for the About page (APP_VERSION comes from the .pro,
     // which gets it from the RPM build environment).
     context->setContextProperty("appVersion", QStringLiteral(APP_VERSION));

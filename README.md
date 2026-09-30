@@ -20,6 +20,9 @@ and no tracking.
   the home screen, with a shortcut to add an account
 - **Local-first storage**: accounts live in a SQLite database in the app's
   own data directory. Nothing is ever uploaded anywhere.
+- **Encrypted backup**: export every account to an AES-256-GCM file in
+  Documents, protected by a passphrase you choose, and restore it later —
+  on this phone or another one
 - **About page** with the installed version, source-code link and a tip
   button
 
@@ -42,8 +45,8 @@ devel-su -c 'rpm -Uvh ~/harbour-sailotp-<version>-1.aarch64.rpm'
 ```
 
 Launch **SailOTP** from the app grid. The app asks for `Camera` (QR
-scanning) and `UserDirs` (file import) permissions on first start — accept
-them or the app will not open.
+scanning) and `UserDirs` (file import and backup) permissions on first
+start — accept them or the app will not open.
 
 ## Using it
 
@@ -66,6 +69,10 @@ asks for confirmation.
 
 **Settings** lives in the main page's pull-down menu, alongside **About**
 (which has the version, the GitHub link and the Ko-fi tip button).
+Settings also has **Export backup** and **Import backup**: the export
+writes an encrypted copy of every account to Documents under a passphrase
+you choose, and the import reads one back — it shows what the file
+contains before anything is restored.
 
 ## Building from source
 
