@@ -45,6 +45,11 @@ export APP_VERSION=%{version}
 %install
 rm -rf %{buildroot}
 %qmake5_install
+# The SDK invokes qmake with QMAKE_STRIP=: (no-op), and the build system's
+# brp-strip only runs `strip -g`, which keeps .symtab — so the shipped binary
+# still reads "not stripped" to file(1) and the Harbour validator. Full-strip
+# it here instead.
+%{__strip} %{buildroot}%{_bindir}/harbour-sailotp
 
 %files
 %defattr(-,root,root,-)
