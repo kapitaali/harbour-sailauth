@@ -7,13 +7,14 @@ License:    GPL-3.0-only
 URL:        https://github.com/kapitaali/harbour-sailotp
 Source0:    %{name}-%{version}.tar.bz2
 
-# sailfishsilica + the Silica add-on module used for the file picker, the
-# QtMultimedia QML import behind the camera viewfinder, and the SQLite
-# driver (loaded dynamically by name, so nothing auto-detects it).
+# sailfishsilica + the QtMultimedia QML import behind the camera viewfinder.
+# Deliberately no Requires for sailfish-components-pickers-qt5 or
+# qt5-plugin-sqldriver-sqlite: the Harbour validator rejects both package
+# names (allowed list does not contain them), and both are base-image
+# packages — sailfish-browser/jolla-contacts pull in the pickers, lipstick/
+# jolla-notes the SQLite driver — so they are always present anyway.
 Requires:   sailfishsilica-qt5
-Requires:   sailfish-components-pickers-qt5
 Requires:   qt5-qtdeclarative-import-multimedia
-Requires:   qt5-plugin-sqldriver-sqlite
 
 BuildRequires: pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires: pkgconfig(Qt5Core)
