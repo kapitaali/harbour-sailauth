@@ -18,6 +18,9 @@
 #include <QScopedPointer>
 #include <QTime>
 #include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 
 #include <cstdio>
 
@@ -34,7 +37,36 @@
  * handler names, type mismatches...) land there too. Mirror everything to
  * stderr with a timestamp instead: the debug launch recipe captures stderr,
  * so failures stay diagnosable.
+ *
+ * A launched (Sailjail-sandboxed) app has no capturable stderr either —
+ * its fd 2 is a socket owned by the booster — so also append to a log file
+ * in the app's whitelisted data directory.  That directory
+ * (~/.local/share/<OrganizationName>/<ApplicationName>/) is created and
+ * made writable by the launch profile on every start, which makes
+ * sandboxed runs diagnosable after the fact.
  */
+namespace {
+
+QFile g_logFile;
+
+void openLogFile()
+{
+    const QString dir = QDir::homePath()
+            + QStringLiteral("/.local/share/harbour.sailotp/harbour-sailotp");
+    QDir().mkpath(dir);
+
+    const QString path = dir + QStringLiteral("/sailotp.log");
+    if (QFileInfo(path).size() > 512 * 1024) {
+        QFile::remove(path + QStringLiteral(".1"));
+        QFile::rename(path, path + QStringLiteral(".1"));
+    }
+
+    g_logFile.setFileName(path);
+    g_logFile.open(QIODevice::Append);
+}
+
+} // namespace
+
 static void mirrorMessages(QtMsgType type, const QMessageLogContext &context,
                            const QString &message)
 {
@@ -43,22 +75,28 @@ static void mirrorMessages(QtMsgType type, const QMessageLogContext &context,
             : type == QtWarningMsg          ? "WARN"
             : type == QtInfoMsg             ? "INFO"
                                             : "DBG";
-    std::fprintf(stderr, "[%s %s] %s:%d %s\n",
-                 qPrintable(QTime::currentTime().toString(QLatin1String("hh:mm:ss.zzz"))),
-                 kind, context.file ? context.file : "-",
-                 context.line, qPrintable(message));
+    const QByteArray line = QByteArray("[")
+            + QTime::currentTime().toString(QLatin1String("hh:mm:ss.zzz")).toLocal8Bit()
+            + ' ' + kind + "] " + (context.file ? context.file : "-")
+            + ':' + QByteArray::number(context.line) + ' '
+            + message.toLocal8Bit() + '\n';
+
+    std::fwrite(line.constData(), 1, line.size(), stderr);
     std::fflush(stderr);
+    if (g_logFile.isOpen()) {
+        g_logFile.write(line);
+        g_logFile.flush();
+    }
 }
 
 int main(int argc, char *argv[])
 {
     qInstallMessageHandler(mirrorMessages);
+    openLogFile();
 
     // Startup marker: attributes everything that follows in a captured log
-    // to this launch (and proves stderr capture is working at all).
-    std::fprintf(stderr, "[%s INFO] sailotp starting\n",
-                 qPrintable(QTime::currentTime().toString(QLatin1String("hh:mm:ss.zzz"))));
-    std::fflush(stderr);
+    // to this launch (and proves log capture is working at all).
+    qInfo("sailotp starting");
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
