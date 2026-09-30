@@ -26,7 +26,8 @@ SOURCES += \
     src/database.cpp \
     src/clipboardhelper.cpp \
     src/importer.cpp \
-    src/qrfilter.cpp
+    src/qrfilter.cpp \
+    src/applock.cpp
 
 HEADERS += \
     src/totp.h \
@@ -34,7 +35,8 @@ HEADERS += \
     src/database.h \
     src/clipboardhelper.h \
     src/importer.h \
-    src/qrfilter.h
+    src/qrfilter.h \
+    src/applock.h
 
 # sailfishapp.prf installs the whole qml/ tree; this list exists so the IDE
 # and qmake know about the files (and so OTHER_FILES below is complete).
