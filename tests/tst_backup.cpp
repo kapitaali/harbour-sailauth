@@ -7,11 +7,13 @@
  * symbol, and database.h needs Qt5Sql headers but not the library — the
  * same arrangement as tst_importer.cpp.
  *
- * Covers the round trip, wrong passphrase, tampered ciphertext, tampered
- * KDF iteration count (the envelope header is GCM additional authenticated
- * data — this is the check that proves a KDF downgrade attempt fails
- * authentication), garbage envelopes, empty input, clamping of hostile
- * digit/period values and the owner-only file mode.
+ * Covers the encrypted round trip, wrong passphrase, tampered ciphertext,
+ * tampered KDF iteration count (the envelope header is GCM additional
+ * authenticated data — this is the check that proves a KDF downgrade
+ * attempt fails authentication), garbage envelopes, empty input, clamping
+ * of hostile digit/period values and the owner-only file mode, plus the
+ * plain-text otpauth export: exact line shape, percent-encoding of the
+ * label, secret normalisation, omitted issuer and empty input.
  *
  * Run inside the Sailfish build engine (Qt 5.6 is what the app links
  * against, so a host build would not prove anything):
@@ -205,6 +207,64 @@ int main()
         expectInt("digits clamped", entry.value("digits").toInt(), 6);
         expectInt("period clamped", entry.value("period").toInt(), 30);
     }
+
+    // --- plain-text export: one otpauth:// URI per line ---
+    const QString textPath = dir.path() + "/export.txt";
+    expectStr("text export succeeds",
+              Backup::writeTextExport(textPath, accounts), QString());
+    {
+        QFile file(textPath);
+        expectBool("text export readable", file.open(QIODevice::ReadOnly), true);
+        const QStringList lines = QString::fromUtf8(file.readAll()).split('\n');
+        file.close();
+        expectInt("text export line count", lines.count(), 3); // 2 URIs, final \n
+        expectStr("text line 1", lines.value(0),
+                  "otpauth://totp/alice?secret=JBSWY3DPEHPK3PXP"
+                  "&issuer=GitHub&algorithm=SHA1&digits=6&period=30");
+        expectStr("text line 2", lines.value(1),
+                  "otpauth://totp/bob%40example.org?secret=MFRGGZDFMZTWQ2LK"
+                  "&issuer=Example&algorithm=SHA1&digits=8&period=60");
+        expectBool("text export ends with newline", lines.value(2).isEmpty(), true);
+        // The file holds secrets too, so it gets the same owner-only mode.
+        expectBool("text export owner-only",
+                   QFile::permissions(textPath)
+                           == (QFileDevice::ReadOwner | QFileDevice::WriteOwner
+                               | QFileDevice::ReadUser | QFileDevice::WriteUser),
+                   true);
+    }
+
+    // --- characters that need encoding, secret normalisation, fallbacks ---
+    QVariantList awkward;
+    awkward.append(account("ACME Co", "user:sub", "jbswy3dpehpk3pxp==", 7, 30));
+    awkward.append(account("", "", "JBSWY3DPEHPK3PXP", 6, 30));
+    const QString awkwardPath = dir.path() + "/awkward.txt";
+    expectStr("awkward export succeeds",
+              Backup::writeTextExport(awkwardPath, awkward), QString());
+    {
+        QFile file(awkwardPath);
+        file.open(QIODevice::ReadOnly);
+        const QStringList lines = QString::fromUtf8(file.readAll()).split('\n');
+        file.close();
+        // ':' in the name is percent-encoded so it can never be mistaken
+        // for the label separator; the secret is upper-cased and unpadded.
+        expectStr("colon and space encoded", lines.value(0),
+                  "otpauth://totp/user%3Asub?secret=JBSWY3DPEHPK3PXP"
+                  "&issuer=ACME%20Co&algorithm=SHA1&digits=7&period=30");
+        // No name: the issuer doubles as the label; no issuer at all: the
+        // parameter is left out rather than sent empty.
+        expectStr("empty issuer omitted", lines.value(1),
+                  "otpauth://totp/account?secret=JBSWY3DPEHPK3PXP"
+                  "&algorithm=SHA1&digits=6&period=30");
+    }
+
+    expectStr("empty text export refused",
+              Backup::writeTextExport(dir.path() + "/none.txt", QVariantList()),
+              "There are no accounts to export");
+    QVariantList secretlessText;
+    secretlessText.append(account("A", "B", "", 6, 30));
+    expectStr("secretless text export refused",
+              Backup::writeTextExport(dir.path() + "/none2.txt", secretlessText),
+              "There are no accounts to export");
 
     if (failures == 0)
         std::printf("\nAll backup checks passed\n");
