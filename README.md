@@ -94,7 +94,7 @@ qmake/Qt 5.6-compatible APIs only.
 
 SailAuth has no network access at all: no analytics, no crash reports, no
 telemetry. Your secrets and codes stay in the device's app data
-directory.
+directory. The full privacy policy is in [PRIVACY.md](PRIVACY.md).
 
 ## License
 
