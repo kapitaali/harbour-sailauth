@@ -10,7 +10,7 @@
  * Backed by an explicitly named INI file at the one config location that is
  * both whitelisted and actually writable inside the Sailjail/firejail
  * sandbox (see settingsFilePath() in settings.cpp).  QSettings' usual
- * org/app form would resolve to ~/.config/harbour-sailotp, which the launch
+ * org/app form would resolve to ~/.config/harbour-sailauth, which the launch
  * profile whitelists but never creates — writes there fail silently.
  */
 class Settings : public QObject

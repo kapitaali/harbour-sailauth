@@ -73,7 +73,7 @@ Page {
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "About SailOTP"
+                text: "About SailAuth"
                 onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
             }
         }

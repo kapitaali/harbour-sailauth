@@ -9,7 +9,7 @@ qmlcache/
 documentation.list
 
 # The binary is named after the directory it lives in.
-/harbour-sailotp
+/harbour-sailauth
 
 # On-device diagnostic tools built by hand (see the header comment in
 # tests/probe_zxing.cpp for the build command).

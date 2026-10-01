@@ -18,10 +18,10 @@ class AccountModel;
  * (format, version, iterations, salt, IV) are fed in as GCM additional
  * authenticated data, which is what makes a tampered KDF iteration count
  * detectable. The file itself is a plain JSON envelope with base64
- * salt/IV/tag/ciphertext, named SailOTP-backup-<stamp>.enc.
+ * salt/IV/tag/ciphertext, named SailAuth-backup-<stamp>.enc.
  *
  * The plain-text export writes one otpauth:// URI per line, named
- * SailOTP-export-<stamp>.txt — the format GNOME Authenticator restores
+ * SailAuth-export-<stamp>.txt — the format GNOME Authenticator restores
  * under "Authenticator" (FreeOTP+ compatible, text/plain) and other
  * authenticator apps read directly. It carries no protection beyond the
  * device, and the page that writes it says so.
@@ -42,11 +42,11 @@ public:
 
     void setAccountModel(AccountModel *model);
 
-    // Target path for the next export: ~/Documents/SailOTP-backup-<stamp>.enc
+    // Target path for the next export: ~/Documents/SailAuth-backup-<stamp>.enc
     Q_INVOKABLE QString defaultBackupPath() const;
 
     // Target path for the next plain-text export:
-    // ~/Documents/SailOTP-export-<stamp>.txt
+    // ~/Documents/SailAuth-export-<stamp>.txt
     Q_INVOKABLE QString defaultTextExportPath() const;
 
     // "" on success, otherwise a message fit for the UI.

@@ -37,7 +37,7 @@ Page {
             width: listView.width
 
             PageHeader {
-                title: "SailOTP"
+                title: "SailAuth"
             }
 
             SearchField {

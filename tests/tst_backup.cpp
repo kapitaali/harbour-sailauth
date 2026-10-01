@@ -190,7 +190,7 @@ int main()
         junk.close();
     }
     expectStr("plain text rejected", Backup::readBackup(junkPath, "x")
-              .value("error").toString(), "Not a SailOTP backup file");
+              .value("error").toString(), "Not a SailAuth backup file");
     expectBool("missing file message",
                Backup::readBackup(path + ".nope", "x").value("error")
                        .toString().startsWith("Cannot read "), true);

@@ -74,7 +74,7 @@ const int kCaptureMaxEdge = 1920;
 int createFrameFd()
 {
 #ifdef __NR_memfd_create
-    return int(syscall(__NR_memfd_create, "sailotp-frame", 0u));
+    return int(syscall(__NR_memfd_create, "sailauth-frame", 0u));
 #else
     return -1;
 #endif
@@ -133,7 +133,7 @@ void QrFilter::attachCamera(QObject *qmlCamera)
     // here also cleans up after a crash mid-scan.
     QString dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     if (dir.isEmpty())
-        dir = QDir::tempPath() + QLatin1String("/harbour-sailotp");
+        dir = QDir::tempPath() + QLatin1String("/harbour-sailauth");
     QDir().mkpath(dir);
     m_scanFilePath = dir + QLatin1String("/scan.jpg");
     QFile::remove(m_scanFilePath);

@@ -18,7 +18,7 @@ bool Database::initialize()
     QDir().mkpath(dataDir);
 
     m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName(dataDir + "/sailotp.db");
+    m_db.setDatabaseName(dataDir + "/sailauth.db");
 
     if (!m_db.open()) {
         qDebug() << "Failed to open database:" << m_db.lastError().text();

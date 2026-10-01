@@ -17,7 +17,7 @@
  *   XDG_RUNTIME_DIR=/run/user/100000 WAYLAND_DISPLAY=../../display/wayland-0 \
  *   QT_QPA_PLATFORM=wayland \
  *   DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/100000/dbus/user_bus_socket \
- *   ./probe_zxing testqr.png /usr/share/harbour-sailotp/qml/pages/ScanPage.qml
+ *   ./probe_zxing testqr.png /usr/share/harbour-sailauth/qml/pages/ScanPage.qml
  *
  * Build in the engine (target ABI of the phone):
  *

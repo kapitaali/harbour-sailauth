@@ -6,7 +6,7 @@ import "../components"
  * Export every account, in one of two shapes:
  *
  * - Encrypted backup (.enc): AES-256-GCM under a passphrase — only
- *   SailOTP opens it, and only with that passphrase.
+ *   SailAuth opens it, and only with that passphrase.
  * - Plain text (.txt): one otpauth:// URI per line — what GNOME
  *   Authenticator restores under "Authenticator" (FreeOTP+ compatible)
  *   and other authenticator apps read directly.

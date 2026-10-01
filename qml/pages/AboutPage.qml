@@ -4,7 +4,7 @@ import Sailfish.Silica 1.0
 Page {
     id: aboutPage
 
-    property string sourceLink: "https://github.com/kapitaali/harbour-sailotp"
+    property string sourceLink: "https://github.com/kapitaali/harbour-sailauth"
     property string tipLink: "https://ko-fi.com/kapitaali"
 
     allowedOrientations: Orientation.Portrait
@@ -29,14 +29,14 @@ Page {
                 // Shipped inside qml/img/ so the path resolves wherever the
                 // package installs (a theme lookup would only find icons the
                 // system itself ships).
-                source: Qt.resolvedUrl("../img/harbour-sailotp.png")
+                source: Qt.resolvedUrl("../img/harbour-sailauth.png")
                 width: 86
                 height: 86
             }
 
             Label {
                 width: parent.width
-                text: "SailOTP"
+                text: "SailAuth"
                 color: Theme.primaryColor
                 font.pixelSize: Theme.fontSizeExtraLarge
                 horizontalAlignment: Text.AlignHCenter
@@ -99,7 +99,7 @@ Page {
 
             Label {
                 width: parent.width
-                text: "SailOTP is free and open source software."
+                text: "SailAuth is free and open source software."
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 horizontalAlignment: Text.AlignHCenter

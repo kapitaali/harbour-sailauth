@@ -1,8 +1,8 @@
-# Harbour SailOTP — Native TOTP Authenticator for Sailfish OS
+# Harbour SailAuth — Native TOTP Authenticator for Sailfish OS
 
 ## App Name
 
-Harbour SailOTP (or "SailOTP")
+Harbour SailAuth (or "SailAuth")
 
 ## Core Concept
 

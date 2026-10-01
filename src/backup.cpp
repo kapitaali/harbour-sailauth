@@ -14,7 +14,7 @@
 #include <QStandardPaths>
 
 namespace {
-const char *kFormat = "harbour-sailotp-backup";
+const char *kFormat = "harbour-sailauth-backup";
 const int kVersion = 1;
 const int kIterations = 200000; // PBKDF2-HMAC-SHA256 rounds (~0.1 s on the phone)
 const int kKeyBytes = 32;       // AES-256
@@ -158,12 +158,12 @@ QByteArray Backup::headerAad(int iterations, const QByteArray &salt,
 
 QString Backup::defaultBackupPath() const
 {
-    return documentPath(QStringLiteral("SailOTP-backup-"), QStringLiteral(".enc"));
+    return documentPath(QStringLiteral("SailAuth-backup-"), QStringLiteral(".enc"));
 }
 
 QString Backup::defaultTextExportPath() const
 {
-    return documentPath(QStringLiteral("SailOTP-export-"), QStringLiteral(".txt"));
+    return documentPath(QStringLiteral("SailAuth-export-"), QStringLiteral(".txt"));
 }
 
 QVariantList Backup::modelAccounts() const
@@ -359,12 +359,12 @@ QVariantMap Backup::readBackup(const QString &filePath, const QString &passphras
     const QJsonDocument document = QJsonDocument::fromJson(file.readAll(), &parseError);
     file.close();
     if (parseError.error != QJsonParseError::NoError || !document.isObject())
-        return fail(QStringLiteral("Not a SailOTP backup file"));
+        return fail(QStringLiteral("Not a SailAuth backup file"));
 
     const QJsonObject envelope = document.object();
     if (envelope.value(QStringLiteral("format")).toString() != QLatin1String(kFormat)
             || envelope.value(QStringLiteral("version")).toInt() != kVersion)
-        return fail(QStringLiteral("Not a SailOTP backup file"));
+        return fail(QStringLiteral("Not a SailAuth backup file"));
 
     const QJsonObject kdf = envelope.value(QStringLiteral("kdf")).toObject();
     const QByteArray salt =
@@ -382,7 +382,7 @@ QVariantMap Backup::readBackup(const QString &filePath, const QString &passphras
     // Sanity bounds — in particular no multi-hour KDF from a hostile file.
     if (salt.size() != kSaltBytes || iv.size() != kIvBytes || tag.size() != kTagBytes
             || ciphertext.isEmpty() || iterations < 1000 || iterations > 5000000)
-        return fail(QStringLiteral("This does not look like a SailOTP backup"));
+        return fail(QStringLiteral("This does not look like a SailAuth backup"));
 
     const QByteArray key = deriveKey(passphrase, salt, iterations);
     const QByteArray aad = headerAad(iterations, salt, iv);

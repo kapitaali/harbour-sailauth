@@ -55,10 +55,10 @@ QFile g_logFile;
 void openLogFile()
 {
     const QString dir = QDir::homePath()
-            + QStringLiteral("/.local/share/harbour.sailotp/harbour-sailotp");
+            + QStringLiteral("/.local/share/harbour.sailauth/harbour-sailauth");
     QDir().mkpath(dir);
 
-    const QString path = dir + QStringLiteral("/sailotp.log");
+    const QString path = dir + QStringLiteral("/sailauth.log");
     if (QFileInfo(path).size() > 512 * 1024) {
         QFile::remove(path + QStringLiteral(".1"));
         QFile::rename(path, path + QStringLiteral(".1"));
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
     // Startup marker: attributes everything that follows in a captured log
     // to this launch (and proves log capture is working at all).
-    qInfo("sailotp starting");
+    qInfo("sailauth starting");
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
     // which gets it from the RPM build environment).
     context->setContextProperty("appVersion", QStringLiteral(APP_VERSION));
 
-    view->setSource(SailfishApp::pathTo("qml/harbour-sailotp.qml"));
+    view->setSource(SailfishApp::pathTo("qml/harbour-sailauth.qml"));
 
     // QQuickView shows an empty (white) window if the root component fails to
     // load and, unlike QQmlApplicationEngine, does not report the errors

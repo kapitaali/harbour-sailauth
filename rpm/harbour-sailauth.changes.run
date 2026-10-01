@@ -16,10 +16,10 @@
 # Tag annotations are read the same way, so the release tag carries the
 # summary of what went into it (see `git tag -n`).
 #
-# Takes precedence over harbour-sailotp.changes. See: sfdk changelog --help
+# Takes precedence over harbour-sailauth.changes. See: sfdk changelog --help
 
-spec=rpm/harbour-sailotp.spec
-[ -f "$spec" ] || spec="$(dirname "$0")/harbour-sailotp.spec"
+spec=rpm/harbour-sailauth.spec
+[ -f "$spec" ] || spec="$(dirname "$0")/harbour-sailauth.spec"
 version=$(sed -n 's/^Version:[[:space:]]*//p' "$spec")
 release=$(sed -n 's/^Release:[[:space:]]*//p' "$spec")
 
@@ -28,7 +28,7 @@ release=$(sed -n 's/^Release:[[:space:]]*//p' "$spec")
 author=$(git log -1 --pretty='format:%an <%ae>' 2>/dev/null)
 [ -n "$author" ] || author="$(git config user.name) <$(git config user.email)>"
 [ -n "$author" ] || author=$(sed -n '2s/^[^ ]* [^ ]* [0-9]* [0-9]* \([^ ]* [^ ]*\).*/\1/p' \
-    "$(dirname "$0")/harbour-sailotp.changes" 2>/dev/null)
+    "$(dirname "$0")/harbour-sailauth.changes" 2>/dev/null)
 [ -n "$author" ] || author="kapitaali <teppo@kapitaali.com>"   # last resort
 
 # Unreleased work: everything reachable before the first release tag.

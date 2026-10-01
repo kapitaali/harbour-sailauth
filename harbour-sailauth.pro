@@ -1,6 +1,6 @@
-# harbour-sailotp.pro
+# harbour-sailauth.pro
 
-TARGET = harbour-sailotp
+TARGET = harbour-sailauth
 CONFIG += sailfishapp c++11
 
 # Version shown on the About page: the RPM build exports APP_VERSION (the
@@ -15,7 +15,7 @@ DEFINES += APP_VERSION=\\\"$$APP_VERSION\\\"
 # the binary — it did, once. Bump main()'s timestamp so it recompiles with
 # the current define; it is a single translation unit, so this costs a
 # second at most.
-_version_touch = $$system(touch $$PWD/src/harbour-sailotp.cpp)
+_version_touch = $$system(touch $$PWD/src/harbour-sailauth.cpp)
 
 QT += core gui qml quick sql multimedia dbus
 
@@ -24,7 +24,7 @@ QT += core gui qml quick sql multimedia dbus
 LIBS += -lcrypto
 
 SOURCES += \
-    src/harbour-sailotp.cpp \
+    src/harbour-sailauth.cpp \
     src/totp.cpp \
     src/accountmodel.cpp \
     src/accountfilter.cpp \
@@ -49,7 +49,7 @@ HEADERS += \
 # sailfishapp.prf installs the whole qml/ tree; this list exists so the IDE
 # and qmake know about the files (and so OTHER_FILES below is complete).
 QML_FILES = \
-    qml/harbour-sailotp.qml \
+    qml/harbour-sailauth.qml \
     qml/cover/CoverPage.qml \
     qml/components/Toast.qml \
     qml/pages/MainPage.qml \
@@ -64,9 +64,9 @@ QML_FILES = \
     qml/pages/AboutPage.qml
 
 OTHER_FILES += \
-    harbour-sailotp.desktop \
-    rpm/harbour-sailotp.spec \
-    qml/img/harbour-sailotp.png \
+    harbour-sailauth.desktop \
+    rpm/harbour-sailauth.spec \
+    qml/img/harbour-sailauth.png \
     tests/tst_totp.cpp \
     $$QML_FILES
 

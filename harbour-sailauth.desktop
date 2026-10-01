@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Name=SailAuth
+Icon=harbour-sailauth
+Exec=harbour-sailauth
+
+[X-Sailjail]
+Permissions=Audio;Camera;UserDirs
+OrganizationName=harbour.sailauth
+ApplicationName=harbour-sailauth

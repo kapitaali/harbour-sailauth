@@ -5,7 +5,7 @@ import Sailfish.Silica 1.0
  * Cover: the first account's live code plus a countdown bar, and one action
  * (add) reachable straight from the multitasking view.
  *
- * `appWindow` is the id of the ApplicationWindow in harbour-sailotp.qml.
+ * `appWindow` is the id of the ApplicationWindow in harbour-sailauth.qml.
  * Covers are instantiated by that ApplicationWindow, so the id resolves; the
  * push happens only after activate() because a covered app's page stack is
  * not interactive yet.
@@ -36,7 +36,7 @@ CoverBackground {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: Theme.paddingLarge
-        text: "SailOTP"
+        text: "SailAuth"
         color: Theme.primaryColor
         font.pixelSize: Theme.fontSizeMedium
     }
@@ -103,7 +103,7 @@ CoverBackground {
             iconSource: "image://theme/icon-cover-new"
             onTriggered: {
                 // `appWindow` is the id of the ApplicationWindow in
-                // harbour-sailotp.qml; the Silica-internal alias is the same
+                // harbour-sailauth.qml; the Silica-internal alias is the same
                 // object reached through the context chain, and covers are
                 // created inside it, so either way the window is reachable.
                 // activate() first: a covered app's page stack is inert.

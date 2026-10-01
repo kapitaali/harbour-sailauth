@@ -4,7 +4,7 @@ import Sailfish.Pickers 1.0
 import "../components"
 
 /*
- * Restore accounts from an encrypted SailOTP backup.
+ * Restore accounts from an encrypted SailAuth backup.
  *
  * Flow mirrors ImportPage: pick the file, then — only after decrypting
  * succeeded — show what is inside, and write to the database when the

@@ -1,4 +1,4 @@
-# SailOTP
+# SailAuth
 
 A native **TOTP 2FA authenticator** for Sailfish OS. It generates the
 six-digit time-based one-time codes (RFC 6238) used by GitHub, Google,
@@ -31,8 +31,8 @@ and no tracking.
 
 ## Requirements
 
-- Sailfish OS **5.1 or later** (built for aarch64; tested on a Jolla C2
-  running SFOS 5.2)
+- Sailfish OS **5.1 or later** (released for aarch64, armv7hl and i486;
+  tested on a Jolla C2 running SFOS 5.2)
 - Camera, for QR scanning (everything else works without one)
 
 ## Installing
@@ -42,12 +42,12 @@ see below), copy it to the phone and install it with root rights — in the
 phone's terminal app or over ssh:
 
 ```sh
-scp harbour-sailotp-<version>-1.aarch64.rpm defaultuser@<phone>:~
+scp harbour-sailauth-<version>-1.aarch64.rpm defaultuser@<phone>:~
 ssh defaultuser@<phone>
-devel-su -c 'rpm -Uvh ~/harbour-sailotp-<version>-1.aarch64.rpm'
+devel-su -c 'rpm -Uvh ~/harbour-sailauth-<version>-1.aarch64.rpm'
 ```
 
-Launch **SailOTP** from the app grid. The app asks for `Camera` (QR
+Launch **SailAuth** from the app grid. The app asks for `Camera` (QR
 scanning) and `UserDirs` (file import and backup) permissions on first
 start — accept them or the app will not open.
 
@@ -81,8 +81,8 @@ back — it shows what the file contains before anything is restored.
 ## Building from source
 
 ```sh
-git clone https://github.com/kapitaali/harbour-sailotp
-cd harbour-sailotp
+git clone https://github.com/kapitaali/harbour-sailauth
+cd harbour-sailauth
 sfdk build
 ```
 
@@ -92,11 +92,11 @@ qmake/Qt 5.6-compatible APIs only.
 
 ## Privacy
 
-SailOTP has no network access at all: no analytics, no crash reports, no
+SailAuth has no network access at all: no analytics, no crash reports, no
 telemetry. Your secrets and codes stay in the device's app data
 directory.
 
 ## License
 
-GPL-3.0-only. If you find SailOTP useful, you can leave a tip on
+GPL-3.0-only. If you find SailAuth useful, you can leave a tip on
 [Ko-fi](https://ko-fi.com/kapitaali).

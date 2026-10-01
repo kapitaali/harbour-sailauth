@@ -1,10 +1,10 @@
-Name:       harbour-sailotp
+Name:       harbour-sailauth
 Summary:    TOTP 2FA authenticator for Sailfish OS
-Version:    0.1.0
+Version: 0.2.9
 Release:    1
 Group:      Qt/Qt
 License:    GPL-3.0-only
-URL:        https://github.com/kapitaali/harbour-sailotp
+URL:        https://github.com/kapitaali/harbour-sailauth
 Source0:    %{name}-%{version}.tar.bz2
 
 # sailfishsilica + the QtMultimedia QML import behind the camera viewfinder.
@@ -38,9 +38,9 @@ a cover that shows the current code. No cloud, no tracking.
 %build
 # Hand the git-derived version to the app so the About page shows the real
 # thing instead of a copy that rots (APP_VERSION survives qmake untouched
-# via the environment, see harbour-sailotp.pro).
+# via the environment, see harbour-sailauth.pro).
 export APP_VERSION=%{version}
-%qmake5 harbour-sailotp.pro
+%qmake5 harbour-sailauth.pro
 %make_build
 
 %install
@@ -50,11 +50,11 @@ rm -rf %{buildroot}
 # brp-strip only runs `strip -g`, which keeps .symtab — so the shipped binary
 # still reads "not stripped" to file(1) and the Harbour validator. Full-strip
 # it here instead.
-%{__strip} %{buildroot}%{_bindir}/harbour-sailotp
+%{__strip} %{buildroot}%{_bindir}/harbour-sailauth
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/harbour-sailotp
-%{_datadir}/harbour-sailotp
-%{_datadir}/applications/harbour-sailotp.desktop
-%{_datadir}/icons/hicolor/*/apps/harbour-sailotp.png
+%{_bindir}/harbour-sailauth
+%{_datadir}/harbour-sailauth
+%{_datadir}/applications/harbour-sailauth.desktop
+%{_datadir}/icons/hicolor/*/apps/harbour-sailauth.png
