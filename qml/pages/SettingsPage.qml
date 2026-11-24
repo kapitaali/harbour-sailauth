@@ -34,6 +34,24 @@ Page {
                 onCheckedChanged: settings.soundEnabled = checked
             }
 
+            ComboBox {
+                id: sortModeCombo
+                width: parent.width
+                label: "Account order"
+                currentIndex: settings.sortMode
+
+                menu: ContextMenu {
+                    MenuItem { text: "Custom" }
+                    MenuItem { text: "A–Z" }
+                    MenuItem { text: "Z–A" }
+                }
+
+                onCurrentIndexChanged: {
+                    if (currentIndex !== settings.sortMode)
+                        settings.sortMode = currentIndex
+                }
+            }
+
             SectionHeader {
                 text: "Data"
             }

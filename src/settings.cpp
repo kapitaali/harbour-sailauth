@@ -6,6 +6,7 @@
 
 namespace {
 const auto kKeySoundEnabled = QStringLiteral("soundEnabled");
+const auto kKeySortMode = QStringLiteral("sortMode");
 }
 
 /*
@@ -32,7 +33,11 @@ Settings::Settings(QObject *parent)
     : QObject(parent)
     , m_settings(settingsFilePath(), QSettings::IniFormat)
     , m_soundEnabled(m_settings.value(kKeySoundEnabled, true).toBool())
+    , m_sortMode(m_settings.value(kKeySortMode, 0).toInt())
 {
+    if (m_sortMode < 0 || m_sortMode > 2)
+        m_sortMode = 0;
+
     qDebug() << "settings file:" << m_settings.fileName();
 }
 
@@ -48,4 +53,21 @@ void Settings::setSoundEnabled(bool on)
     m_soundEnabled = on;
     m_settings.setValue(kKeySoundEnabled, on);
     emit soundEnabledChanged();
+}
+
+int Settings::sortMode() const
+{
+    return m_sortMode;
+}
+
+void Settings::setSortMode(int mode)
+{
+    if (mode < 0 || mode > 2)
+        mode = 0;
+    if (m_sortMode == mode)
+        return;
+
+    m_sortMode = mode;
+    m_settings.setValue(kKeySortMode, mode);
+    emit sortModeChanged(mode);
 }

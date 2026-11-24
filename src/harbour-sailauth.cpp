@@ -118,6 +118,9 @@ int main(int argc, char *argv[])
     Settings settings;
     AccountFilter accountFilter;
     accountFilter.setSourceModel(&model);
+    accountFilter.setSortMode(settings.sortMode());
+    QObject::connect(&settings, &Settings::sortModeChanged,
+                     &accountFilter, &AccountFilter::setSortMode);
 
     Backup backup;
     backup.setAccountModel(&model);

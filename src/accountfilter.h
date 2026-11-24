@@ -23,6 +23,7 @@ class AccountFilter : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(QString filterText READ filterText WRITE setFilterText NOTIFY filterTextChanged)
+    Q_PROPERTY(int sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
 
 public:
     explicit AccountFilter(QObject *parent = nullptr);
@@ -32,12 +33,16 @@ public:
     QString filterText() const;
     void setFilterText(const QString &text);
 
+    int sortMode() const;
+    void setSortMode(int mode);
+
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
 
 signals:
     void filterTextChanged();
+    void sortModeChanged();
 
 private:
     QVector<int> mappingFor(const QString &text) const;
@@ -46,7 +51,8 @@ private:
 
     QAbstractItemModel *m_source;
     QString m_filterText;
-    QVector<int> m_rows; // source row indices currently shown, in order
+    int m_sortMode;
+    QVector<int> m_rows; // source row indices currently shown, in display order
 };
 
 #endif // ACCOUNTFILTER_H

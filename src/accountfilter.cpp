@@ -1,9 +1,14 @@
 #include "accountfilter.h"
 #include "accountmodel.h"
 
+#include <QCollator>
+
+#include <algorithm>
+
 AccountFilter::AccountFilter(QObject *parent)
     : QAbstractListModel(parent)
     , m_source(nullptr)
+    , m_sortMode(0)
 {
 }
 
@@ -56,6 +61,23 @@ void AccountFilter::setFilterText(const QString &text)
     applyMapping(mappingFor(text));
 }
 
+int AccountFilter::sortMode() const
+{
+    return m_sortMode;
+}
+
+void AccountFilter::setSortMode(int mode)
+{
+    if (mode < 0 || mode > 2)
+        mode = 0;
+    if (m_sortMode == mode)
+        return;
+
+    m_sortMode = mode;
+    emit sortModeChanged();
+    applyMapping(mappingFor(m_filterText));
+}
+
 int AccountFilter::rowCount(const QModelIndex &parent) const
 {
     return parent.isValid() ? 0 : m_rows.size();
@@ -94,14 +116,52 @@ QVector<int> AccountFilter::mappingFor(const QString &text) const
             rows.append(r);
         }
     }
+    // Custom mode preserves the database/source order exactly.
+    if (m_sortMode == 0)
+        return rows;
+
+    // QCollator follows the device locale, so alphabetical ordering behaves
+    // naturally for the user's language instead of comparing Unicode code
+    // points.  Issuer is the primary display key; accounts without one fall
+    // back to their account name.  Account name is also the tie-breaker.
+    QCollator collator;
+    collator.setCaseSensitivity(Qt::CaseInsensitive);
+
+    std::stable_sort(rows.begin(), rows.end(),
+                     [this, &collator](int leftRow, int rightRow) {
+        const QModelIndex leftIndex = m_source->index(leftRow, 0);
+        const QModelIndex rightIndex = m_source->index(rightRow, 0);
+
+        const QString leftIssuer =
+                m_source->data(leftIndex, AccountModel::IssuerRole).toString().trimmed();
+        const QString rightIssuer =
+                m_source->data(rightIndex, AccountModel::IssuerRole).toString().trimmed();
+        const QString leftName =
+                m_source->data(leftIndex, AccountModel::NameRole).toString().trimmed();
+        const QString rightName =
+                m_source->data(rightIndex, AccountModel::NameRole).toString().trimmed();
+
+        const QString leftKey = leftIssuer.isEmpty() ? leftName : leftIssuer;
+        const QString rightKey = rightIssuer.isEmpty() ? rightName : rightIssuer;
+
+        int result = collator.compare(leftKey, rightKey);
+        if (result == 0)
+            result = collator.compare(leftName, rightName);
+
+        if (result == 0)
+            return leftRow < rightRow;
+
+        return m_sortMode == 1 ? result < 0 : result > 0;
+    });
+
     return rows;
 }
 
 /*
  * Move from m_rows to `next` by removing and inserting only the span where
- * they differ: both sequences are ordered source row indices, so the shared
- * prefix and shared suffix bracket the change.  Never a reset — that is the
- * whole point (see the header comment).
+ * they differ.  The shared prefix and suffix bracket the changed section,
+ * regardless of whether the rows are in source order or a sorted display
+ * order.  Never a reset — that is the whole point (see the header comment).
  */
 void AccountFilter::applyMapping(const QVector<int> &next)
 {

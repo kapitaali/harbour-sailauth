@@ -17,6 +17,7 @@ class Settings : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool soundEnabled READ soundEnabled WRITE setSoundEnabled NOTIFY soundEnabledChanged)
+    Q_PROPERTY(int sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
 
 public:
     explicit Settings(QObject *parent = nullptr);
@@ -24,14 +25,19 @@ public:
     bool soundEnabled() const;
     void setSoundEnabled(bool on);
 
+    int sortMode() const;
+    void setSortMode(int mode);
+
 signals:
     void soundEnabledChanged();
+    void sortModeChanged(int mode);
 
 private:
     static QString settingsFilePath();
 
     QSettings m_settings;
     bool m_soundEnabled;
+    int m_sortMode;
 };
 
 #endif // SETTINGS_H
