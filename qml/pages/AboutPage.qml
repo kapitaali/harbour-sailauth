@@ -20,7 +20,7 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: "About"
+                title: qsTr("About")
                 leftMargin: 0
             }
 
@@ -46,7 +46,7 @@ Page {
                 width: parent.width
                 // The real build version, handed over by the RPM build from
                 // the git tag; hand-built binaries report "dev".
-                text: "Version " + appVersion
+                text: qsTr("Version %1").arg(appVersion)
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
@@ -54,12 +54,7 @@ Page {
 
             Label {
                 width: parent.width
-                text: "A native TOTP 2FA authenticator for Sailfish OS.\n\n" +
-                      "• RFC 6238 compliant TOTP codes\n" +
-                      "• Scan QR codes to add accounts\n" +
-                      "• Import accounts from other authenticators\n" +
-                      "• Local storage — no cloud, no tracking\n\n" +
-                      "All codes and accounts stay on your device."
+                text: qsTr("A native TOTP 2FA authenticator for Sailfish OS.\n\n• RFC 6238 compliant TOTP codes\n• Scan QR codes to add accounts\n• Import accounts from other authenticators\n• Local storage — no cloud, no tracking\n\nAll codes and accounts stay on your device.")
                 color: Theme.primaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
@@ -67,14 +62,12 @@ Page {
             }
 
             SectionHeader {
-                text: "Support"
+                text: qsTr("Support")
             }
 
             Label {
                 width: parent.width
-                text: "We love Open Source software and the Jolla ecosystem. " +
-                      "If you want to support me or my work, please leave " +
-                      "some tip here:"
+                text: qsTr("We love Open Source software and the Jolla ecosystem. If you want to support me or my work, please leave some tip here:")
                 color: Theme.primaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
@@ -83,23 +76,23 @@ Page {
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Leave a tip"
+                text: qsTr("Leave a tip")
                 onClicked: Qt.openUrlExternally(aboutPage.tipLink)
             }
 
             SectionHeader {
-                text: "Source code"
+                text: qsTr("Source code")
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "View on GitHub"
+                text: qsTr("View on GitHub")
                 onClicked: Qt.openUrlExternally(aboutPage.sourceLink)
             }
 
             Label {
                 width: parent.width
-                text: "SailAuth is free and open source software."
+                text: qsTr("SailAuth is free and open source software.")
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 horizontalAlignment: Text.AlignHCenter
@@ -107,7 +100,7 @@ Page {
             }
 
             SectionHeader {
-                text: "License"
+                text: qsTr("License")
             }
 
             Label {

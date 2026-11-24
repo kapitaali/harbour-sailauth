@@ -17,7 +17,7 @@ Page {
 
         Label {
             width: parent.width
-            text: "Delete account?"
+            text: qsTr("Delete account?")
             color: Theme.primaryColor
             font.pixelSize: Theme.fontSizeLarge
             horizontalAlignment: Text.AlignHCenter
@@ -40,12 +40,12 @@ Page {
             spacing: Theme.paddingLarge
 
             Button {
-                text: "Cancel"
+                text: qsTr("Cancel")
                 onClicked: pageStack.pop()
             }
 
             Button {
-                text: "Delete"
+                text: qsTr("Delete")
                 onClicked: {
                     accountModel.deleteAccount(confirmPage.accountId)
                     pageStack.pop()

@@ -92,7 +92,7 @@ CoverBackground {
     Label {
         id: emptyLabel
         anchors.centerIn: parent
-        text: "No accounts yet"
+        text: qsTr("No accounts yet")
         color: Theme.secondaryColor
         font.pixelSize: Theme.fontSizeMedium
         visible: cover.coverCode.length === 0

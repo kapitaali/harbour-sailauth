@@ -41,8 +41,9 @@ Page {
         if (error.length > 0) {
             toast.show(error)
         } else {
-            exportPage.done((encrypted ? "Backup" : "Export")
-                            + " saved to Documents/" + fileName())
+            exportPage.done(encrypted
+                            ? qsTr("Backup saved to Documents/%1").arg(fileName())
+                            : qsTr("Export saved to Documents/%1").arg(fileName()))
             pageStack.pop()
         }
     }
@@ -58,30 +59,27 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: "Export"
+                title: qsTr("Export")
                 leftMargin: 0
             }
 
-            SectionHeader { text: "Format" }
+            SectionHeader { text: qsTr("Format") }
 
             ComboBox {
                 id: formatBox
                 width: parent.width
-                label: "Format"
+                label: qsTr("Format")
                 menu: ContextMenu {
-                    MenuItem { text: "Encrypted backup (.enc)" }
-                    MenuItem { text: "Plain text for other apps (.txt)" }
+                    MenuItem { text: qsTr("Encrypted backup (.enc)") }
+                    MenuItem { text: qsTr("Plain text for other apps (.txt)") }
                 }
             }
 
             Label {
                 width: parent.width
                 text: exportPage.encrypted
-                      ? "Write an encrypted copy of all accounts to this " +
-                        "device's Documents folder, where the Files app can " +
-                        "reach it."
-                      : "Write one otpauth:// URI per line — readable by " +
-                        "GNOME Authenticator, FreeOTP+, Aegis and other apps."
+                      ? qsTr("Write an encrypted copy of all accounts to this device's Documents folder, where the Files app can reach it.")
+                      : qsTr("Write one otpauth:// URI per line — readable by GNOME Authenticator, FreeOTP+, Aegis and other apps.")
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 wrapMode: Text.WordWrap
@@ -89,14 +87,14 @@ Page {
 
             Label {
                 width: parent.width
-                text: "File: Documents/" + exportPage.fileName()
+                text: qsTr("File: Documents/%1").arg(exportPage.fileName())
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 truncationMode: TruncationMode.Fade
             }
 
             SectionHeader {
-                text: "Passphrase"
+                text: qsTr("Passphrase")
                 visible: exportPage.encrypted
             }
 
@@ -104,8 +102,8 @@ Page {
                 id: passphrase
                 visible: exportPage.encrypted
                 width: parent.width
-                label: "Passphrase"
-                placeholderText: "Encrypts the file"
+                label: qsTr("Passphrase")
+                placeholderText: qsTr("Encrypts the file")
                 echoMode: TextInput.Password
                 EnterKey.enabled: text.length > 0
                 EnterKey.onClicked: confirm.forceActiveFocus()
@@ -115,8 +113,8 @@ Page {
                 id: confirm
                 visible: exportPage.encrypted
                 width: parent.width
-                label: "Repeat passphrase"
-                placeholderText: "Must match"
+                label: qsTr("Repeat passphrase")
+                placeholderText: qsTr("Must match")
                 echoMode: TextInput.Password
                 EnterKey.enabled: text.length > 0 && text === passphrase.text
                 EnterKey.onClicked: exportPage.exportNow()
@@ -126,7 +124,7 @@ Page {
                 width: parent.width
                 visible: exportPage.encrypted && confirm.text.length > 0
                          && confirm.text !== passphrase.text
-                text: "Passphrases do not match"
+                text: qsTr("Passphrases do not match")
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeSmall
             }
@@ -134,8 +132,7 @@ Page {
             Label {
                 width: parent.width
                 visible: exportPage.encrypted
-                text: "The backup opens only with this passphrase — there " +
-                      "is no recovery if it is lost. Keep it somewhere safe."
+                text: qsTr("The backup opens only with this passphrase — there is no recovery if it is lost. Keep it somewhere safe.")
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeSmall
                 wrapMode: Text.WordWrap
@@ -144,9 +141,7 @@ Page {
             Label {
                 width: parent.width
                 visible: !exportPage.encrypted
-                text: "Plain text is not encrypted: anyone who gets this " +
-                      "file can generate your codes. Delete it after the " +
-                      "other app has imported it."
+                text: qsTr("Plain text is not encrypted: anyone who gets this file can generate your codes. Delete it after the other app has imported it.")
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeSmall
                 wrapMode: Text.WordWrap
@@ -154,7 +149,7 @@ Page {
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Export"
+                text: qsTr("Export")
                 enabled: !exportPage.encrypted
                          || (passphrase.text.length > 0
                              && passphrase.text === confirm.text)

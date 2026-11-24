@@ -18,29 +18,29 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: "Settings"
+                title: qsTr("Settings")
                 leftMargin: 0
             }
 
             SectionHeader {
-                text: "General"
+                text: qsTr("General")
             }
 
             TextSwitch {
                 id: soundSwitch
-                text: "Sound feedback"
-                description: "Play a sound when a code is copied"
+                text: qsTr("Sound feedback")
+                description: qsTr("Play a sound when a code is copied")
                 checked: settings.soundEnabled
                 onCheckedChanged: settings.soundEnabled = checked
             }
 
             SectionHeader {
-                text: "Data"
+                text: qsTr("Data")
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Export backup"
+                text: qsTr("Export backup")
                 onClicked: {
                     var page = pageStack.push(
                                 Qt.resolvedUrl("BackupExportPage.qml"))
@@ -50,7 +50,7 @@ Page {
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Import backup"
+                text: qsTr("Import backup")
                 onClicked: {
                     var page = pageStack.push(
                                 Qt.resolvedUrl("BackupImportPage.qml"))
@@ -60,20 +60,19 @@ Page {
 
             Label {
                 width: parent.width
-                text: "Accounts are stored only in this device's app data " +
-                      "directory. Nothing is uploaded anywhere."
+                text: qsTr("Accounts are stored only in this device's app data directory. Nothing is uploaded anywhere.")
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 wrapMode: Text.WordWrap
             }
 
             SectionHeader {
-                text: "About"
+                text: qsTr("About")
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "About SailAuth"
+                text: qsTr("About SailAuth")
                 onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
             }
         }

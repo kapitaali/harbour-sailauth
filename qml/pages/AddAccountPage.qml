@@ -25,13 +25,13 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: "Add Account"
+                title: qsTr("Add Account")
                 leftMargin: 0
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Scan QR code instead"
+                text: qsTr("Scan QR code instead")
                 onClicked: {
                     // Silica would only show its generic error page if the
                     // scanner failed to compile, so surface the real reason.
@@ -39,8 +39,8 @@ Page {
                     if (scanner.status === Component.Error) {
                         var why = scanner.errorString()
                         console.error("ScanPage failed to load:", why)
-                        toast.show("Scan failed: "
-                                   + (why.length > 90 ? why.slice(0, 90) + "…" : why))
+                        toast.show(qsTr("Scan failed: %1").arg(
+                                   why.length > 90 ? why.slice(0, 90) + "…" : why))
                     } else {
                         pageStack.push(scanner)
                     }
@@ -49,8 +49,8 @@ Page {
 
             TextField {
                 id: issuerField
-                label: "Issuer"
-                placeholderText: "e.g. GitHub"
+                label: qsTr("Issuer")
+                placeholderText: qsTr("e.g. GitHub")
                 width: parent.width
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: nameField.focus = true
@@ -58,8 +58,8 @@ Page {
 
             TextField {
                 id: nameField
-                label: "Account name"
-                placeholderText: "e.g. user@example.com"
+                label: qsTr("Account name")
+                placeholderText: qsTr("e.g. user@example.com")
                 width: parent.width
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: secretField.focus = true
@@ -67,8 +67,8 @@ Page {
 
             TextField {
                 id: secretField
-                label: "Secret key"
-                placeholderText: "Base32 encoded secret"
+                label: qsTr("Secret key")
+                placeholderText: qsTr("Base32 encoded secret")
                 width: parent.width
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: digitsField.focus = true
@@ -77,7 +77,7 @@ Page {
             Label {
                 width: parent.width
                 visible: secretField.text.length > 0 && !totp.validateSecret(secretField.text)
-                text: "Not a valid Base32 secret (A–Z and 2–7 only)"
+                text: qsTr("Not a valid Base32 secret (A–Z and 2–7 only)")
                 color: Theme.errorColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 wrapMode: Text.WordWrap
@@ -85,7 +85,7 @@ Page {
 
             TextField {
                 id: digitsField
-                label: "Digits"
+                label: qsTr("Digits")
                 placeholderText: "6"
                 width: parent.width
                 inputMethodHints: Qt.ImhDigitsOnly
@@ -96,7 +96,7 @@ Page {
 
             TextField {
                 id: periodField
-                label: "Period (seconds)"
+                label: qsTr("Period (seconds)")
                 placeholderText: "30"
                 width: parent.width
                 inputMethodHints: Qt.ImhDigitsOnly
@@ -108,7 +108,7 @@ Page {
             Button {
                 id: saveButton
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Add account"
+                text: qsTr("Add account")
                 enabled: totp.validateSecret(secretField.text)
                 onClicked: {
                     var digits = parseInt(digitsField.text) || 6
@@ -117,7 +117,7 @@ Page {
                                             nameField.text.trim(),
                                             secretField.text.trim(),
                                             digits, period)
-                    toast.show("Account added")
+                    toast.show(qsTr("Account added"))
                     pageStack.pop()
                 }
             }
@@ -139,7 +139,7 @@ Page {
 
         var parsed = importer.parseText(text)
         if (parsed.length === 0) {
-            toast.show("Could not read that QR code")
+            toast.show(qsTr("Could not read that QR code"))
             return
         }
 

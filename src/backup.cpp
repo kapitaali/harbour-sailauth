@@ -192,14 +192,14 @@ QVariantList Backup::modelAccounts() const
 QString Backup::saveBackup(const QString &filePath, const QString &passphrase)
 {
     if (!m_model)
-        return QStringLiteral("No accounts loaded");
+        return tr("No accounts loaded");
     return writeBackup(filePath, passphrase, modelAccounts());
 }
 
 QString Backup::saveTextExport(const QString &filePath)
 {
     if (!m_model)
-        return QStringLiteral("No accounts loaded");
+        return tr("No accounts loaded");
     return writeTextExport(filePath, modelAccounts());
 }
 
@@ -212,7 +212,7 @@ QString Backup::writeBackup(const QString &filePath, const QString &passphrase,
                             const QVariantList &accounts)
 {
     if (passphrase.isEmpty())
-        return QStringLiteral("Enter a passphrase");
+        return tr("Enter a passphrase");
 
     // Payload: only the fields a restore needs.
     QJsonArray accountArray;
@@ -234,7 +234,7 @@ QString Backup::writeBackup(const QString &filePath, const QString &passphrase,
         accountArray.append(object);
     }
     if (accountArray.isEmpty())
-        return QStringLiteral("There are no accounts to back up");
+        return tr("There are no accounts to back up");
 
     QJsonObject payloadObject;
     payloadObject.insert(QStringLiteral("accounts"), accountArray);
@@ -244,7 +244,7 @@ QString Backup::writeBackup(const QString &filePath, const QString &passphrase,
     const QByteArray salt = randomBytes(kSaltBytes);
     const QByteArray iv = randomBytes(kIvBytes);
     if (salt.isEmpty() || iv.isEmpty())
-        return QStringLiteral("Could not read random data");
+        return tr("Could not read random data");
     const QByteArray key = deriveKey(passphrase, salt, kIterations);
     const QByteArray aad = headerAad(kIterations, salt, iv);
 
@@ -253,7 +253,7 @@ QString Backup::writeBackup(const QString &filePath, const QString &passphrase,
 
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return QStringLiteral("Out of memory");
+        return tr("Out of memory");
     int len = 0;
     int total = 0;
     bool ok = EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, nullptr, nullptr) == 1
@@ -279,7 +279,7 @@ QString Backup::writeBackup(const QString &filePath, const QString &passphrase,
                                  reinterpret_cast<unsigned char *>(tag.data())) == 1;
     EVP_CIPHER_CTX_free(ctx);
     if (!ok)
-        return QStringLiteral("Encryption failed");
+        return tr("Encryption failed");
     ciphertext.resize(total);
 
     QJsonObject kdfObject;
@@ -317,7 +317,7 @@ QString Backup::writeTextExport(const QString &filePath,
         ++exported;
     }
     if (exported == 0)
-        return QStringLiteral("There are no accounts to export");
+        return tr("There are no accounts to export");
 
     return writeDocument(filePath, document);
 }
@@ -326,13 +326,11 @@ QString Backup::writeDocument(const QString &filePath, const QByteArray &content
 {
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
-        return QStringLiteral("Cannot write ") + filePath + QStringLiteral(": ")
-                + file.errorString();
+        return tr("Cannot write %1: %2").arg(filePath, file.errorString());
     const qint64 written = file.write(content);
     file.close();
     if (written != content.size())
-        return QStringLiteral("Short write to ") + filePath + QStringLiteral(": ")
-                + file.errorString();
+        return tr("Short write to %1: %2").arg(filePath, file.errorString());
     // The file holds secrets: owner-only.
     file.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
     return QString();
@@ -352,19 +350,18 @@ QVariantMap Backup::readBackup(const QString &filePath, const QString &passphras
 
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly))
-        return fail(QStringLiteral("Cannot read ") + filePath + QStringLiteral(": ")
-                    + file.errorString());
+        return fail(tr("Cannot read %1: %2").arg(filePath, file.errorString()));
 
     QJsonParseError parseError;
     const QJsonDocument document = QJsonDocument::fromJson(file.readAll(), &parseError);
     file.close();
     if (parseError.error != QJsonParseError::NoError || !document.isObject())
-        return fail(QStringLiteral("Not a SailAuth backup file"));
+        return fail(tr("Not a SailAuth backup file"));
 
     const QJsonObject envelope = document.object();
     if (envelope.value(QStringLiteral("format")).toString() != QLatin1String(kFormat)
             || envelope.value(QStringLiteral("version")).toInt() != kVersion)
-        return fail(QStringLiteral("Not a SailAuth backup file"));
+        return fail(tr("Not a SailAuth backup file"));
 
     const QJsonObject kdf = envelope.value(QStringLiteral("kdf")).toObject();
     const QByteArray salt =
@@ -382,7 +379,7 @@ QVariantMap Backup::readBackup(const QString &filePath, const QString &passphras
     // Sanity bounds — in particular no multi-hour KDF from a hostile file.
     if (salt.size() != kSaltBytes || iv.size() != kIvBytes || tag.size() != kTagBytes
             || ciphertext.isEmpty() || iterations < 1000 || iterations > 5000000)
-        return fail(QStringLiteral("This does not look like a SailAuth backup"));
+        return fail(tr("This does not look like a SailAuth backup"));
 
     const QByteArray key = deriveKey(passphrase, salt, iterations);
     const QByteArray aad = headerAad(iterations, salt, iv);
@@ -390,7 +387,7 @@ QVariantMap Backup::readBackup(const QString &filePath, const QString &passphras
     QByteArray plaintext(ciphertext.size(), '\0');
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     if (!ctx)
-        return fail(QStringLiteral("Out of memory"));
+        return fail(tr("Out of memory"));
     int len = 0;
     int total = 0;
     bool ok = EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, nullptr, nullptr) == 1
@@ -415,14 +412,14 @@ QVariantMap Backup::readBackup(const QString &filePath, const QString &passphras
     total += len;
     EVP_CIPHER_CTX_free(ctx);
     if (!ok)
-        return fail(QStringLiteral("Wrong passphrase or damaged file"));
+        return fail(tr("Wrong passphrase or damaged file"));
     plaintext.resize(total);
 
     QJsonParseError payloadError;
     const QJsonDocument payload =
             QJsonDocument::fromJson(plaintext, &payloadError);
     if (payloadError.error != QJsonParseError::NoError || !payload.isObject())
-        return fail(QStringLiteral("Backup contents are damaged"));
+        return fail(tr("Backup contents are damaged"));
 
     QVariantList accounts;
     const QJsonArray accountArray =
@@ -451,7 +448,7 @@ QVariantMap Backup::readBackup(const QString &filePath, const QString &passphras
         accounts.append(entry);
     }
     if (accounts.isEmpty())
-        return fail(QStringLiteral("The backup contains no accounts"));
+        return fail(tr("The backup contains no accounts"));
 
     result.insert(QStringLiteral("ok"), true);
     result.insert(QStringLiteral("accounts"), accounts);

@@ -25,7 +25,7 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: "Edit Account"
+                title: qsTr("Edit Account")
                 // The column is inset by the page margin, so the header must
                 // not add a second one.
                 leftMargin: 0
@@ -33,8 +33,8 @@ Page {
 
             TextField {
                 id: issuerField
-                label: "Issuer"
-                placeholderText: "e.g. GitHub"
+                label: qsTr("Issuer")
+                placeholderText: qsTr("e.g. GitHub")
                 width: parent.width
                 text: editPage.issuer
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
@@ -43,8 +43,8 @@ Page {
 
             TextField {
                 id: nameField
-                label: "Account name"
-                placeholderText: "e.g. user@example.com"
+                label: qsTr("Account name")
+                placeholderText: qsTr("e.g. user@example.com")
                 width: parent.width
                 text: editPage.name
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
@@ -53,8 +53,8 @@ Page {
 
             TextField {
                 id: secretField
-                label: "Secret key"
-                placeholderText: "Base32 encoded secret"
+                label: qsTr("Secret key")
+                placeholderText: qsTr("Base32 encoded secret")
                 width: parent.width
                 text: editPage.secret
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
@@ -63,7 +63,7 @@ Page {
 
             TextField {
                 id: digitsField
-                label: "Digits"
+                label: qsTr("Digits")
                 placeholderText: "6"
                 width: parent.width
                 inputMethodHints: Qt.ImhDigitsOnly
@@ -74,7 +74,7 @@ Page {
 
             TextField {
                 id: periodField
-                label: "Period (seconds)"
+                label: qsTr("Period (seconds)")
                 placeholderText: "30"
                 width: parent.width
                 inputMethodHints: Qt.ImhDigitsOnly
@@ -86,7 +86,7 @@ Page {
             Button {
                 id: saveButton
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Save"
+                text: qsTr("Save")
                 enabled: totp.validateSecret(secretField.text)
                 onClicked: {
                     var digits = parseInt(digitsField.text) || 6
@@ -96,7 +96,7 @@ Page {
                                                nameField.text.trim(),
                                                secretField.text.trim(),
                                                digits, period)
-                    toast.show("Changes saved")
+                    toast.show(qsTr("Changes saved"))
                     pageStack.pop()
                 }
             }

@@ -56,11 +56,10 @@ Page {
         var added = importer.importAccounts(foundAccounts)
         if (added > 0) {
             accountModel.refresh()
-            backupImportPage.done(added + (added === 1 ? " account" : " accounts")
-                                  + " restored")
+            backupImportPage.done(qsTr("%n account restored", "", added))
             pageStack.pop()
         } else {
-            toast.show("Nothing restored — duplicates or errors")
+            toast.show(qsTr("Nothing restored — duplicates or errors"))
         }
     }
 
@@ -75,22 +74,20 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: "Import backup"
+                title: qsTr("Import backup")
                 leftMargin: 0
             }
 
             Label {
                 width: parent.width
-                text: "Restore accounts from a backup file this app " +
-                      "exported. The passphrase you chose when exporting " +
-                      "is required."
+                text: qsTr("Restore accounts from a backup file this app exported. The passphrase you chose when exporting is required.")
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 wrapMode: Text.WordWrap
             }
 
             SectionHeader {
-                text: "File"
+                text: qsTr("File")
             }
 
             Button {
@@ -98,12 +95,12 @@ Page {
                 text: backupImportPage.filePath.length > 0
                       ? backupImportPage.filePath.substring(
                             backupImportPage.filePath.lastIndexOf('/') + 1)
-                      : "Choose backup file"
+                      : qsTr("Choose backup file")
                 onClicked: pageStack.push(filePickerComponent)
             }
 
             SectionHeader {
-                text: "Passphrase"
+                text: qsTr("Passphrase")
                 visible: backupImportPage.filePath.length > 0
             }
 
@@ -111,8 +108,8 @@ Page {
                 id: passphrase
                 width: parent.width
                 visible: backupImportPage.filePath.length > 0
-                label: "Passphrase"
-                placeholderText: "The one used when exporting"
+                label: qsTr("Passphrase")
+                placeholderText: qsTr("The one used when exporting")
                 echoMode: TextInput.Password
                 EnterKey.enabled: text.length > 0
                 EnterKey.onClicked: backupImportPage.openBackup()
@@ -120,14 +117,14 @@ Page {
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Read backup"
+                text: qsTr("Read backup")
                 visible: backupImportPage.filePath.length > 0
                 enabled: passphrase.text.length > 0
                 onClicked: backupImportPage.openBackup()
             }
 
             SectionHeader {
-                text: "Accounts in backup"
+                text: qsTr("Accounts in backup")
                 visible: backupImportPage.foundAccounts.length > 0
             }
 
@@ -160,9 +157,7 @@ Page {
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Restore " + backupImportPage.foundAccounts.length +
-                      " account" +
-                      (backupImportPage.foundAccounts.length === 1 ? "" : "s")
+                text: qsTr("Restore %n account", "", backupImportPage.foundAccounts.length)
                 visible: backupImportPage.foundAccounts.length > 0
                 onClicked: backupImportPage.doRestore()
             }

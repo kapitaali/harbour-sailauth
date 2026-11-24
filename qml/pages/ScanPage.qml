@@ -40,7 +40,7 @@ Page {
 
     function noteCaptureFailure() {
         if (++captureFailures === 3) {
-            toast.show("Camera capture failed")
+            toast.show(qsTr("Camera capture failed"))
         }
     }
 
@@ -171,7 +171,7 @@ Page {
         Label {
             id: successLabel
             anchors.centerIn: parent
-            text: "QR code scanned"
+            text: qsTr("QR code scanned")
             color: Theme.primaryColor
             font.pixelSize: Theme.fontSizeLarge
         }
@@ -190,8 +190,8 @@ Page {
         Label {
             id: scanHint
             anchors.centerIn: parent
-            text: scanPage.succeeded ? "QR code scanned"
-                                     : "Point the camera at a QR code"
+            text: scanPage.succeeded ? qsTr("QR code scanned")
+                                     : qsTr("Point the camera at a QR code")
             color: Theme.primaryColor
             font.pixelSize: Theme.fontSizeSmall
         }
@@ -201,7 +201,7 @@ Page {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Theme.paddingLarge * 5
         anchors.horizontalCenter: parent.horizontalCenter
-        text: "Enter the key manually"
+        text: qsTr("Enter the key manually")
         onClicked: pageStack.pop()
     }
 
@@ -211,7 +211,7 @@ Page {
         onDecoded: {
             if (text.indexOf("otpauth://") !== 0) {
                 // Anything else is a code we cannot use; keep scanning.
-                toast.show("Not an authenticator QR code")
+                toast.show(qsTr("Not an authenticator QR code"))
             } else {
                 // AddAccountPage fills its form; the scanner confirms and
                 // closes itself via succeed().

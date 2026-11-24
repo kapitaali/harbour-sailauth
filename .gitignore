@@ -24,3 +24,7 @@ RPMS/
 
 # Project-internal notes, kept out of the repository.
 META-INF/
+
+# Generated translation files
+translations/*.qm
+/translations/harbour-sailauth.ts

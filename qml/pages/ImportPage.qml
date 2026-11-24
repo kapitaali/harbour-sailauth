@@ -20,7 +20,7 @@ Page {
 
     function applyAccounts(accounts, source) {
         if (accounts.length === 0) {
-            toast.show(source + ": no valid accounts found")
+            toast.show(qsTr("%1: no valid accounts found").arg(source))
             return
         }
         foundAccounts = accounts
@@ -31,10 +31,10 @@ Page {
         var added = importer.importAccounts(foundAccounts)
         if (added > 0) {
             accountModel.refresh()
-            toast.show(added + " account" + (added === 1 ? "" : "s") + " imported")
+            toast.show(qsTr("%n account imported", "", added))
             pageStack.pop()
         } else {
-            toast.show("Nothing imported — duplicates or errors")
+            toast.show(qsTr("Nothing imported — duplicates or errors"))
         }
     }
 
@@ -45,7 +45,7 @@ Page {
             onSelectedContentPropertiesChanged: {
                 if (selectedContentProperties) {
                     importPage.applyAccounts(importer.parseFile(
-                                                 selectedContentProperties.filePath), "File")
+                                                 selectedContentProperties.filePath), qsTr("File"))
                 }
             }
         }
@@ -62,58 +62,56 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: "Import Accounts"
+                title: qsTr("Import Accounts")
                 leftMargin: 0
             }
 
             Label {
                 width: parent.width
-                text: "Import accounts from a backup file exported by another " +
-                      "authenticator app (e.g. GNOME Authenticator, Aegis, FreeOTP+)."
+                text: qsTr("Import accounts from a backup file exported by another authenticator app (e.g. GNOME Authenticator, Aegis, FreeOTP+).")
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
                 wrapMode: Text.WordWrap
             }
 
             SectionHeader {
-                text: "From file"
+                text: qsTr("From file")
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Choose backup file"
+                text: qsTr("Choose backup file")
                 onClicked: pageStack.push(filePickerComponent)
             }
 
             Label {
                 width: parent.width
-                text: "Select a .txt file of otpauth:// URIs or a .json backup " +
-                      "from Aegis, andOTP or GNOME Authenticator."
+                text: qsTr("Select a .txt file of otpauth:// URIs or a .json backup from Aegis, andOTP or GNOME Authenticator.")
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 wrapMode: Text.WordWrap
             }
 
             SectionHeader {
-                text: "From text"
+                text: qsTr("From text")
             }
 
             TextArea {
                 id: textArea
                 width: parent.width
-                label: "Paste otpauth:// URIs"
+                label: qsTr("Paste otpauth:// URIs")
                 placeholderText: "otpauth://totp/..."
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Parse"
+                text: qsTr("Parse")
                 enabled: textArea.text.length > 0
-                onClicked: importPage.applyAccounts(importer.parseText(textArea.text), "Text")
+                onClicked: importPage.applyAccounts(importer.parseText(textArea.text), qsTr("Text"))
             }
 
             SectionHeader {
-                text: "Found accounts"
+                text: qsTr("Found accounts")
                 visible: importResults.visible
             }
 
@@ -149,8 +147,7 @@ Page {
             Button {
                 id: importButton
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Import " + importPage.foundAccounts.length +
-                      " account" + (importPage.foundAccounts.length === 1 ? "" : "s")
+                text: qsTr("Import %n account", "", importPage.foundAccounts.length)
                 visible: importResults.visible
                 onClicked: importPage.doImport()
             }

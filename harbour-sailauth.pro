@@ -73,3 +73,8 @@ OTHER_FILES += \
 # Names only, not paths: sailfishapp.prf expands each entry to
 # icons/<size>/<TARGET>.png and installs it into icons/hicolor/<size>/apps.
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172 256x256
+
+# Translations
+CONFIG += sailfishapp_i18n
+TRANSLATIONS += translations/harbour-sailauth-cs_CZ.ts
+TRANSLATION_SOURCES += qml src

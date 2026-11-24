@@ -44,7 +44,7 @@ Page {
                 id: searchField
                 x: Theme.horizontalPageMargin
                 width: parent.width - Theme.horizontalPageMargin * 2
-                placeholderText: "Search accounts"
+                placeholderText: qsTr("Search accounts")
                 // Bound to the *source* count: the field must never blink
                 // out from under the user while a filter matches nothing.
                 visible: accountModel.count > 0
@@ -60,7 +60,7 @@ Page {
                 // onEnterKeyClicked do not exist on this Silica and break
                 // the whole page ("Type MainPage unavailable").
                 EnterKey.enabled: text.length > 0
-                EnterKey.text: "Search"
+                EnterKey.text: qsTr("Search")
                 EnterKey.onClicked: filteredAccountModel.filterText = text
                 onTextChanged: {
                     // The × button (or deleting everything): no filter left.
@@ -141,7 +141,7 @@ Page {
 
             onClicked: {
                 clipboardHelper.setText(model.code)
-                toast.show("Code copied")
+                toast.show(qsTr("Code copied"))
                 if (settings.soundEnabled) {
                     copyPlayer.seek(0)
                     copyPlayer.play()
@@ -150,7 +150,7 @@ Page {
 
             menu: ContextMenu {
                 MenuItem {
-                    text: "Edit"
+                    text: qsTr("Edit")
                     onClicked: pageStack.push(Qt.resolvedUrl("EditAccountPage.qml"), {
                         accountId: model.accountId,
                         issuer: model.issuer,
@@ -161,7 +161,7 @@ Page {
                     })
                 }
                 MenuItem {
-                    text: "Delete"
+                    text: qsTr("Delete")
                     onClicked: pageStack.push(Qt.resolvedUrl("ConfirmDeletePage.qml"), {
                         accountId: model.accountId,
                         issuer: model.issuer,
@@ -179,33 +179,33 @@ Page {
          */
         ViewPlaceholder {
             enabled: listView.count === 0
-            text: accountModel.count > 0 ? "No matches" : "No accounts yet"
-            hintText: accountModel.count > 0 ? "Try a different search"
-                                            : "Pull down to add an account"
+            text: accountModel.count > 0 ? qsTr("No matches") : qsTr("No accounts yet")
+            hintText: accountModel.count > 0 ? qsTr("Try a different search")
+                                            : qsTr("Pull down to add an account")
         }
 
         PullDownMenu {
             MenuItem {
-                text: "Add account"
+                text: qsTr("Add account")
                 onClicked: pageStack.push(Qt.resolvedUrl("AddAccountPage.qml"))
             }
             MenuItem {
-                text: "Import accounts"
+                text: qsTr("Import accounts")
                 onClicked: pageStack.push(Qt.resolvedUrl("ImportPage.qml"))
             }
             MenuItem {
-                text: "Settings"
+                text: qsTr("Settings")
                 onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
             }
             MenuItem {
-                text: "About"
+                text: qsTr("About")
                 onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
             }
         }
 
         PushUpMenu {
             MenuItem {
-                text: "About"
+                text: qsTr("About")
                 onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
             }
         }
